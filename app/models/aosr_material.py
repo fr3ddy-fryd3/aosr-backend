@@ -1,0 +1,16 @@
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
+from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.aosr import Aosr
+
+
+class AosrMaterial(Base):
+    aosr_id: Mapped[int] = mapped_column(ForeignKey("aosr.id"), index=True)
+    material_id: Mapped[int] = mapped_column(ForeignKey("material.id"), index=True)
+    volume: Mapped[int]
+
+    aosr: Mapped["Aosr"] = relationship(back_populates="materials")
+

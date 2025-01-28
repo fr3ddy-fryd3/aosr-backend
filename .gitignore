@@ -1,0 +1,72 @@
+### Python ###
+# Виртуальные окружения
+venv/
+env/
+.venv/
+pythonenv*
+# alembic
+migration/versions/
+
+# Кэш и скомпилированные файлы
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Распределения и сборка
+build/
+dist/
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# Тестирование и покрытие
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+### IDE ###
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+*.iml
+
+# Другие редакторы
+*.swp
+*.swo
+__pycache__
+
+### Системные файлы ###
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+### Локальные настройки ###
+.env
+.env.local
+.env.*.local
+
+### Логи и данные ###
+*.log
+*.sqlite
+*.db
+
+### Прочее ###
+# Файлы зависимостей (если не используете poetry/pipenv)
+pip-selfcheck.json
+
+
