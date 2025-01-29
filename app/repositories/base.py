@@ -25,11 +25,15 @@ class BaseRepository[M, S]:
 
     # Получение объекта по ID
     @classmethod
-    async def get_by_id(cls, session: AsyncSession, id: int) -> S:
+    async def get_by_id(cls, session: AsyncSession, id: int) -> S | None:
         stmt = select(cls.Model).where(cls.Model.id == id)
         raw_result = await session.scalars(stmt)
-        result = cls.Schema.model_validate(raw_result.one())
-        return result
+        raw_result = raw_result.one_or_none()
+        if raw_result is not None:
+            result = cls.Schema.model_validate(raw_result)
+            return result
+        else:
+            return None
 
     # Получение всех объектов
     @classmethod

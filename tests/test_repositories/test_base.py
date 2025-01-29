@@ -6,12 +6,12 @@ from app.schemas.material import MaterialSchema
 
 
 class TestRepository(BaseRepository[Material, MaterialSchema]):
-    model = Material
-    schema = MaterialSchema
+    Model = Material
+    Schema = MaterialSchema
 
 
 @pytest.mark.asyncio
-async def test_create(session: AsyncSession):
+async def test_create(session: AsyncSession, clean_db):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
@@ -24,7 +24,7 @@ async def test_create(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_all(session: AsyncSession):
+async def test_get_all(session: AsyncSession, clean_db):
     material_one = MaterialSchema(name="Test material 1", units="kg")
     material_two = MaterialSchema(name="Test material 2", units="kg")
 
@@ -44,24 +44,26 @@ async def test_get_all(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_update(session: AsyncSession):
+async def test_update(session: AsyncSession, clean_db):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
     row = await TestRepository.get_by_id(session, 1)
+    assert row is not None
+
     row.name = "Updated material"
     row.units = "lbs"
-
     await TestRepository.update(session, row)
 
     # Проверяем все поля
     updated_row = await TestRepository.get_by_id(session, 1)
+    assert updated_row is not None
     assert updated_row.name == "Updated material"
     assert updated_row.units == "lbs"
 
 
 @pytest.mark.asyncio
-async def test_delete(session: AsyncSession):
+async def test_delete(session: AsyncSession, clean_db):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
@@ -73,7 +75,7 @@ async def test_delete(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_by_id_not_found(session: AsyncSession):
+async def test_get_by_id_not_found(session: AsyncSession, clean_db):
     # Проверка на случай, если объект с таким ID не существует
     result = await TestRepository.get_by_id(session, 999)  # Не существует
     assert result is None

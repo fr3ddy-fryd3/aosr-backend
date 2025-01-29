@@ -1,5 +1,6 @@
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
+from sqlalchemy.sql import text
 from fastapi.testclient import TestClient
 from database import get_session
 from main import app  # импортируй FastAPI приложение из твоего проекта
@@ -17,6 +18,7 @@ TestAsyncDBSession = async_sessionmaker(test_engine, expire_on_commit=False)
 async def override_get_session():
     async with TestAsyncDBSession() as session:
         yield session
+        await session.rollback()
 
 
 # Фикстура для тестовой базы данных
@@ -46,3 +48,13 @@ def test_client():
 async def session():
     async with TestAsyncDBSession() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+async def clean_db(session: AsyncSession):
+    await session.execute(text("DELETE FROM material"))
+    await session.execute(text("DELETE FROM section"))
+    await session.execute(text("DELETE FROM sectionmaterial"))
+    await session.execute(text("DELETE FROM aosr"))
+    await session.execute(text("DELETE FROM aosrmaterial"))
+    await session.commit()

@@ -9,7 +9,8 @@ if TYPE_CHECKING:
 
 class Aosr(Base):
     name: Mapped[str] = mapped_column()
-    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True)
+    section_id: Mapped[int] = mapped_column(
+        ForeignKey("section.id"), index=True)
 
     materials: Mapped[list["AosrMaterial"]] = relationship(
         back_populates="aosr", cascade="all, delete-orphan"
