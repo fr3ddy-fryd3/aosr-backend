@@ -1,9 +1,10 @@
 fastapi
-alembic
+uvicorn
 sqlalchemy
+alembic
+asyncpg
+aiosqlite
 pydantic
 pydantic-settings
-asyncpg
-uvicorn
 pytest-asyncio
 pytest-cov

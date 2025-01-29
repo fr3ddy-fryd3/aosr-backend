@@ -1,3 +1,4 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.repositories.base import BaseRepository
 from app.models.section_material import SectionMaterial
@@ -13,7 +14,9 @@ class SectionMaterialRepository(BaseRepository[SectionMaterial, SectionMaterialS
     Schema = SectionMaterialSchema
 
     @classmethod
-    async def get_by_section_id(cls, session, section_id: int):
+    async def get_by_section_id(
+        cls, session: AsyncSession, section_id: int
+    ) -> list[SectionMaterialWithNameSchema]:
         stmt = (
             select(cls.Model, Material)
             .outerjoin(Material, full=True)
