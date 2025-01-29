@@ -11,7 +11,7 @@ class TestRepository(BaseRepository[Material, MaterialSchema]):
 
 
 @pytest.mark.asyncio
-async def test_create(session: AsyncSession, clean_db):
+async def test_create(clean_db, session: AsyncSession):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
@@ -24,7 +24,7 @@ async def test_create(session: AsyncSession, clean_db):
 
 
 @pytest.mark.asyncio
-async def test_get_all(session: AsyncSession, clean_db):
+async def test_get_all(clean_db, session: AsyncSession):
     material_one = MaterialSchema(name="Test material 1", units="kg")
     material_two = MaterialSchema(name="Test material 2", units="kg")
 
@@ -44,7 +44,7 @@ async def test_get_all(session: AsyncSession, clean_db):
 
 
 @pytest.mark.asyncio
-async def test_update(session: AsyncSession, clean_db):
+async def test_update(clean_db, session: AsyncSession):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
@@ -63,7 +63,7 @@ async def test_update(session: AsyncSession, clean_db):
 
 
 @pytest.mark.asyncio
-async def test_delete(session: AsyncSession, clean_db):
+async def test_delete(clean_db, session: AsyncSession):
     material = MaterialSchema(name="Test material", units="kg")
 
     await TestRepository.create(session, material)
@@ -75,7 +75,7 @@ async def test_delete(session: AsyncSession, clean_db):
 
 
 @pytest.mark.asyncio
-async def test_get_by_id_not_found(session: AsyncSession, clean_db):
+async def test_get_by_id_not_found(clean_db, session: AsyncSession):
     # Проверка на случай, если объект с таким ID не существует
     result = await TestRepository.get_by_id(session, 999)  # Не существует
     assert result is None

@@ -54,7 +54,7 @@ async def create_test_aosr_with_materials(
 
 # Тест получения AOSR по ID секции
 @pytest.mark.asyncio
-async def test_get_by_section_id(create_test_aosr, session: AsyncSession):
+async def test_get_by_section_id(clean_db, create_test_aosr, session: AsyncSession):
     aosrs = await AosrRepository.get_by_section_id(session, 1)
 
     assert aosrs is not None
@@ -65,7 +65,7 @@ async def test_get_by_section_id(create_test_aosr, session: AsyncSession):
 # Тест создания AOSR с материалами
 @pytest.mark.asyncio
 async def test_create_aosr_and_its_materials(
-    create_test_aosr_with_materials, session: AsyncSession
+    clean_db, create_test_aosr_with_materials, session: AsyncSession
 ):
     aosr = await AosrRepository.get_by_id(session, 1)
     assert aosr is not None
@@ -76,7 +76,7 @@ async def test_create_aosr_and_its_materials(
 # Тест обновления AOSR и его материалов
 @pytest.mark.asyncio
 async def test_update_aosr_and_its_materials(
-    create_test_aosr_with_materials, session: AsyncSession
+    clean_db, create_test_aosr_with_materials, session: AsyncSession
 ):
     # Обновляем AOSR и его материалы
     updated_material = AosrMaterialSchema(id=1, aosr_id=1, material_id=1, volume=2)
@@ -112,7 +112,7 @@ async def test_update_aosr_and_its_materials(
 # Тест получения материалов по ID AOSR
 @pytest.mark.asyncio
 async def test_get_aosr_materials_by_aosr_id(
-    create_test_aosr_with_materials, session: AsyncSession
+    clean_db, create_test_aosr_with_materials, session: AsyncSession
 ):
     # Сценарий 1: Получение материалов для существующего AOSR
     materials = await AosrMaterialRepository.get_aosr_materials_by_aosr_id(session, 1)

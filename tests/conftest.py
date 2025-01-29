@@ -50,7 +50,7 @@ async def session():
         yield session
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=False)
 async def clean_db(session: AsyncSession):
     await session.execute(text("DELETE FROM material"))
     await session.execute(text("DELETE FROM section"))

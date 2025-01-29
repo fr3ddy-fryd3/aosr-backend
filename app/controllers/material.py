@@ -38,8 +38,9 @@ async def update_material(session: SessionDep, material: MaterialSchema):
 
 @material_router.delete("/")
 async def delete_material(session: SessionDep, id: int):
-    if id:
-        await MaterialRepository.delete_by_id(session, id)
+    if id is None:
+        return {"message": "Invalid ID"}
+    elif await MaterialRepository.delete_by_id(session, id):
         return {"message": "Material deleted"}
     else:
         return {"message": "Invalid ID"}

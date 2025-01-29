@@ -24,7 +24,9 @@ async def create_test_section(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_create_section_and_materials(create_test_section, session: AsyncSession):
+async def test_create_section_and_materials(
+    clean_db, create_test_section, session: AsyncSession
+):
     """
     Тест создания секции с материалами.
     """
@@ -45,7 +47,7 @@ async def test_create_section_and_materials(create_test_section, session: AsyncS
 
 
 @pytest.mark.asyncio
-async def test_get_by_section_id(create_test_section, session: AsyncSession):
+async def test_get_by_section_id(clean_db, create_test_section, session: AsyncSession):
     """
     Тест получения материалов по ID секции.
     """

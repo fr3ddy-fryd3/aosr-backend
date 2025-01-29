@@ -21,6 +21,7 @@ async def get_sections(session: SessionDep, id: int = 0):
 @section_router.post("/")
 async def create_section(session: SessionDep, data: SectionWithMaterialsSchema):
     await SectionRepository.create_section_and_its_materials(session, data)
+    return {"message": "Section created"}
 
 
 @section_router.post("/several")
@@ -37,8 +38,9 @@ async def update_section(session: SessionDep, section: SectionWithMaterialsSchem
 
 @section_router.delete("/")
 async def delete_section(session: SessionDep, id: int):
-    if id:
-        await SectionRepository.delete_by_id(session, id)
+    if id is None:
+        return {"message": "Invalid ID"}
+    elif await SectionRepository.delete_by_id(session, id):
         return {"message": "Section deleted"}
     else:
         return {"message": "Invalid ID"}

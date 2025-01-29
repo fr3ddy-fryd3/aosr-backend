@@ -66,8 +66,13 @@ class BaseRepository[M, S]:
 
     # Удаление объекта по ID
     @classmethod
-    async def delete_by_id(cls, session: AsyncSession, id: int) -> None:
+    async def delete_by_id(cls, session: AsyncSession, id: int) -> M | None:
         stmt = select(cls.Model).where(cls.Model.id == id)
-        obj = await session.scalars(stmt)
-        await session.delete(obj.one_or_none())
-        await cls._execute_commit(session)
+        raw_result = await session.scalars(stmt)
+        result = raw_result.one_or_none()
+        if result is not None:
+            await session.delete(result)
+            await cls._execute_commit(session)
+            return result
+        else:
+            return None
