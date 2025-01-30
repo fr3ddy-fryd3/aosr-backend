@@ -22,9 +22,9 @@ class SectionMaterialRepository(BaseRepository[SectionMaterial, SectionMaterialS
             .outerjoin(Material, full=True)
             .where(cls.Model.section_id == section_id)
         )
-        print(stmt)
         raw_result = await session.execute(stmt)
         raw_result = raw_result.all()
+        print(f"raw_result = {raw_result}")
         result = []
 
         # данный цикл собирает в один общий объект информацию из

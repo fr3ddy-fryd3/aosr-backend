@@ -13,7 +13,7 @@ async def test_get_empty_materials(test_client):
 async def test_create_material(test_client):
     material_data = {"name": "Test Material", "units": "kg"}
     response = test_client.post("/material/", json=material_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {"message": "Material created"}
 
 
@@ -40,7 +40,7 @@ async def test_create_multiple_materials(test_client):
         {"name": "Material 2", "units": "kg"},
     ]
     response = test_client.post("/material/several", json=materials_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {"message": "Materials created"}
 
 
@@ -62,5 +62,5 @@ async def test_delete_material(test_client):
 @pytest.mark.asyncio
 async def test_delete_invalid_material(test_client):
     response = test_client.delete("/material/?id=999")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Invalid ID"}
+    assert response.status_code == 404
+    assert response.json() == {"message": "Material not found"}

@@ -1,6 +1,7 @@
 from typing import TypeVar
 
 from pydantic import BaseModel
+from sqlalchemy.engine import result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.base import Base
@@ -40,29 +41,38 @@ class BaseRepository[M, S]:
     async def get_all(cls, session: AsyncSession) -> list[S]:
         stmt = select(cls.Model)
         raw_result = await session.scalars(stmt)
-        result = [cls.Schema.model_validate(obj) for obj in raw_result.all()]
-        return result
+        raw_result = raw_result.all()
+        if raw_result != []:
+            result = [cls.Schema.model_validate(obj) for obj in raw_result]
+            return result
+        else:
+            return []
 
     # Создание нового объекта
     @classmethod
-    async def create(cls, session: AsyncSession, obj: S) -> None:
+    async def create(cls, session: AsyncSession, obj: S) -> S:
         new_obj = cls.Model(**obj.model_dump())
-        print(new_obj)
         session.add(new_obj)
         await cls._execute_commit(session)
+        return cls.Schema.model_validate(new_obj)
 
     # Создание нескольких новых объектов
     @classmethod
-    async def create_many(cls, session: AsyncSession, objs: list[S]) -> None:
+    async def create_many(cls, session: AsyncSession, objs: list[S]) -> list[S]:
         new_objs = [cls.Model(**obj.model_dump()) for obj in objs]
         session.add_all(new_objs)
         await cls._execute_commit(session)
+        return [cls.Schema.model_validate(obj) for obj in new_objs]
 
     # Обновление существующего объекта
     @classmethod
     async def update(cls, session: AsyncSession, obj: S) -> None:
         await session.merge(cls.Model(**obj.model_dump()))
         await cls._execute_commit(session)
+        updated_obj = await session.scalars(
+            select(cls.Model).where(cls.Model.id == obj.id)
+        )
+        return cls.Schema.model_validate(updated_obj.one())
 
     # Удаление объекта по ID
     @classmethod
