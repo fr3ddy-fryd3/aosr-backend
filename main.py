@@ -19,14 +19,16 @@ app.include_router(aosr_material_router)
 
 origins = [
     "http://127.0.0.1",
-    "http://127.0.0.1:5173",
-    "http://localhost",
-    "http://localhost:5173",
+    "http://127.0.0.1:80",
+    "http://192.168.0.4",
+    "http://192.168.0.4:80",
+    "http://192.168.60.165",
+    "http://192.168.60.165:80",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
