@@ -60,7 +60,7 @@ async def update_material(
         return {"message": f"Failed to update material: {str(e)}"}
 
 
-@material_router.delete("/")
+@material_router.delete("/{id}")
 async def delete_material(session: SessionDep, response: Response, id: int):
     try:
         success = await MaterialRepository.delete_by_id(session, id)

@@ -8,7 +8,7 @@ from app.schemas.section_material import SectionMaterialSchema
 section_material_router = APIRouter(prefix="/section_material")
 
 
-@section_material_router.get("/by_section/")
+@section_material_router.get("/by_section/{id}")
 async def get_section_materials_by_section(
     session: SessionDep, response: Response, id: int | None = None
 ):
@@ -79,7 +79,7 @@ async def update_section_material(
         return {"message": f"Failed to update section material: {str(e)}"}
 
 
-@section_material_router.delete("/")
+@section_material_router.delete("/{id}")
 async def delete_section_material(session: SessionDep, response: Response, id: int):
     try:
         success = await SectionMaterialRepository.delete_by_id(session, id)

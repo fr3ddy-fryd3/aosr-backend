@@ -8,7 +8,7 @@ from app.schemas.aosr import AosrSchema, AosrWithMaterialsSchema
 aosr_router = APIRouter(prefix="/aosr")
 
 
-@aosr_router.get("/by_section/")
+@aosr_router.get("/by_section/{id}")
 async def get_aosrs_by_section(
     session: SessionDep, response: Response, id: int | None = None
 ):
@@ -73,7 +73,7 @@ async def update_aosr(
         return {"message": f"Failed to update AOSR: {str(e)}"}
 
 
-@aosr_router.delete("/")
+@aosr_router.delete("/{id}")
 async def delete_aosr(session: SessionDep, response: Response, id: int):
     try:
         success = await AosrRepository.delete_by_id(session, id)

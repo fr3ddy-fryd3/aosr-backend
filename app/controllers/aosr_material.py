@@ -8,7 +8,7 @@ from app.schemas.aosr_material import AosrMaterialSchema
 aosr_material_router = APIRouter(prefix="/aosr_material")
 
 
-@aosr_material_router.get("/by_aosr")
+@aosr_material_router.get("/by_aosr/{id}")
 async def get_aosr_materials_by_aosr_id(
     session: SessionDep, response: Response, id: int | None = None
 ):
@@ -77,7 +77,7 @@ async def update_aosr_material(
         return {"message": f"Failed to update AOSR material: {str(e)}"}
 
 
-@aosr_material_router.delete("/")
+@aosr_material_router.delete("/{id}")
 async def delete_aosr_material(session: SessionDep, response: Response, id: int):
     try:
         success = await AosrMaterialRepository.delete_by_id(session, id)

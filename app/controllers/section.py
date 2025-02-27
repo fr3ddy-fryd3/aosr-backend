@@ -60,7 +60,7 @@ async def update_section(
         return {"message": f"Failed to update section: {str(e)}"}
 
 
-@section_router.delete("/")
+@section_router.delete("/{id}")
 async def delete_section(session: SessionDep, response: Response, id: int):
     try:
         success = await SectionRepository.delete_by_id(session, id)
