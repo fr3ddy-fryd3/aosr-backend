@@ -65,7 +65,7 @@ async def test_create_multiple_aosr(test_client):
 
 @pytest.mark.asyncio
 async def test_get_aosr_by_section_id(test_client):
-    response = test_client.get("/aosr/by_section/?id=1")
+    response = test_client.get("/aosr/by_section/1")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -87,13 +87,13 @@ async def test_update_aosr(test_client):
 
 @pytest.mark.asyncio
 async def test_delete_aosr(test_client):
-    response = test_client.delete("/aosr/?id=3")
+    response = test_client.delete("/aosr/3")
     assert response.status_code == 200
     assert response.json() == {"message": "AOSR deleted"}
 
 
 @pytest.mark.asyncio
 async def test_delete_invalid_aosr(test_client):
-    response = test_client.delete("/aosr/?id=999")
+    response = test_client.delete("/aosr/999")
     assert response.status_code == 404
     assert response.json() == {"message": "AOSR not found"}

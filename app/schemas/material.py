@@ -1,11 +1,11 @@
-from app.schemas import BaseSchema
+from typing import TYPE_CHECKING
+from .base import BaseSchema
 
 
 class MaterialSchema(BaseSchema):
-    id: int | None = None
     name: str
     units: str
 
 
-class MaterialWithVolumeSchema(MaterialSchema):
-    volume: int
+class DBMaterialSchema(MaterialSchema):
+    id: int

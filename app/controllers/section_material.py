@@ -24,11 +24,11 @@ async def get_section_materials_by_section(
 
 @section_material_router.get("/")
 async def get_section_material(
-    session: SessionDep, response: Response, section_material_id: int | None = None
+    session: SessionDep, response: Response, id: int | None = None
 ):
-    if section_material_id is not None:
+    if id is not None:
         section_material_response = await SectionMaterialRepository.get_by_id(
-            session, section_material_id
+            session, id
         )
         if section_material_response:
             return section_material_response

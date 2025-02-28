@@ -50,7 +50,7 @@ async def test_get_aosr_material_by_id(test_client):
 
 @pytest.mark.asyncio
 async def test_get_aosr_materials_by_aosr_id(test_client):
-    response = test_client.get("/aosr_material/by_aosr?id=1")
+    response = test_client.get("/aosr_material/by_aosr/1")
     assert response.status_code == 200
     assert len(response.json()) == 1
     assert response.json()[0]["aosr_id"] == 1
@@ -81,13 +81,13 @@ async def test_update_aosr_material(test_client):
 
 @pytest.mark.asyncio
 async def test_delete_aosr_material(test_client):
-    response = test_client.delete("/aosr_material/?id=1")
+    response = test_client.delete("/aosr_material/1")
     assert response.status_code == 200
     assert response.json() == {"message": "AOSR material deleted"}
 
 
 @pytest.mark.asyncio
 async def test_delete_invalid_aosr_material(test_client):
-    response = test_client.delete("/aosr_material/?id=999")
+    response = test_client.delete("/aosr_material/999")
     assert response.status_code == 404
     assert response.json() == {"message": "AOSR material not found"}

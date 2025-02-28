@@ -9,6 +9,8 @@ from alembic import context
 
 from database import DATABASE_URL
 from app.models.base import Base
+from app.models.project import Project
+from app.models.project_material import ProjectMaterial
 from app.models.section import Section
 from app.models.section_material import SectionMaterial
 from app.models.aosr import Aosr
@@ -23,6 +25,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

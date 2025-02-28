@@ -5,17 +5,17 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.material import Material
-    from app.models.section import Section
+    from app.models.project import Project
 
 
-class SectionMaterial(Base):
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id"), nullable=False, index=True
+class ProjectMaterial(Base):
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id"), nullable=False, index=True
     )
     material_id: Mapped[int] = mapped_column(
         ForeignKey("materials.id"), nullable=False, index=True
     )
     volume: Mapped[float]
 
-    section: Mapped["Section"] = relationship(back_populates="materials")
+    project: Mapped["Project"] = relationship(back_populates="materials")
     material: Mapped["Material"] = relationship(back_populates="materials")

@@ -80,13 +80,13 @@ async def test_update_section(test_client):
 
 @pytest.mark.asyncio
 async def test_delete_section(test_client):
-    response = test_client.delete("/section/?id=1")
+    response = test_client.delete("/section/1")
     assert response.status_code == 200
     assert response.json() == {"message": "Section deleted"}
 
 
 @pytest.mark.asyncio
 async def test_delete_invalid_section(test_client):
-    response = test_client.delete("/section/?id=999")
+    response = test_client.delete("/section/999")
     assert response.status_code == 404
     assert response.json() == {"message": "Section not found"}

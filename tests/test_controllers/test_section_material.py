@@ -78,7 +78,7 @@ async def test_get_section_material_by_id(test_client):
     Тест получения материала секции по ID.
     """
     # Затем получаем его по ID
-    response = test_client.get("/section_material/?section_material_id=1")
+    response = test_client.get("/section_material/?id=1")
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
@@ -97,7 +97,7 @@ async def test_get_section_materials_by_section(test_client):
     assert isinstance(response.json(), list)
 
     # Получаем материалы по ID секции
-    response = test_client.get("/section_material/by_section/?id=1")
+    response = test_client.get("/section_material/by_section/1")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -132,7 +132,7 @@ async def test_update_section_material(test_client):
     assert update_response.json() == {"message": "Section material updated"}
 
     # Проверяем, что материал обновился
-    get_response = test_client.get("/section_material/?section_material_id=1")
+    get_response = test_client.get("/section_material/?id=1")
     assert get_response.status_code == 200
     data = get_response.json()
     assert data["volume"] == 20000
@@ -153,12 +153,12 @@ async def test_delete_section_material(test_client):
     assert create_response.status_code == 201
 
     # Затем удаляем его
-    delete_response = test_client.delete("/section_material/?id=1")
+    delete_response = test_client.delete("/section_material/1")
     assert delete_response.status_code == 200
     assert delete_response.json() == {"message": "Section material deleted"}
 
     # Проверяем, что материал удалён
-    get_response = test_client.get("/section_material/?section_material_id=1")
+    get_response = test_client.get("/section_material/?id=1")
     assert get_response.status_code == 404
     assert get_response.json() == {"message": "Section material not found"}
 
@@ -168,5 +168,5 @@ async def test_delete_invalid_section_material(test_client):
     """
     Тест удаления несуществующего материала секции.
     """
-    response = test_client.delete("/section_material/?id=999")
+    response = test_client.delete("/section_material/999")
     assert response.json() == {"message": "Section material not found"}

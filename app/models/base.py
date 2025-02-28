@@ -1,6 +1,7 @@
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
+
 # Базовый класс для всех моделей
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
@@ -9,4 +10,4 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+        return cls.__name__.lower() + "s"

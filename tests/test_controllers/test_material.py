@@ -54,13 +54,13 @@ async def test_update_material(test_client):
 
 @pytest.mark.asyncio
 async def test_delete_material(test_client):
-    response = test_client.delete("/material/?id=1")
+    response = test_client.delete("/material/1")
     assert response.status_code == 200
     assert response.json() == {"message": "Material deleted"}
 
 
 @pytest.mark.asyncio
 async def test_delete_invalid_material(test_client):
-    response = test_client.delete("/material/?id=999")
+    response = test_client.delete("/material/999")
     assert response.status_code == 404
     assert response.json() == {"message": "Material not found"}
