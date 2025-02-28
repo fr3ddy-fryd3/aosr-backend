@@ -1,14 +1,16 @@
-from app.schemas import BaseSchema
+from typing import TYPE_CHECKING
+from .base import BaseSchema
+
+if TYPE_CHECKING:
+    from .material import DBMaterialSchema
 
 
 class SectionMaterialSchema(BaseSchema):
-    id: int | None = None
-    section_id: int = 0
-    material_id: int | None = None
-    volume: int
+    section_id: int
+    material_id: int
+    volume: float
 
 
-# Эта схема нужна для отправки данных на фронт в более удобном виде
-class SectionMaterialWithNameSchema(SectionMaterialSchema):
-    name: str
-    units: str
+class DBSectionMaterialSchema(SectionMaterialSchema):
+    id: int
+    material: DBMaterialSchema

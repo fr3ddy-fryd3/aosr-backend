@@ -1,13 +1,16 @@
-from app.schemas import BaseSchema
+from typing import TYPE_CHECKING
+from .base import BaseSchema
+
+if TYPE_CHECKING:
+    from .material import DBMaterialSchema
 
 
 class AosrMaterialSchema(BaseSchema):
-    id: int | None = None
-    aosr_id: int = 0
+    aosr_id: int
     material_id: int
-    volume: int
+    volume: float
 
 
-class AosrMaterialWithNameSchema(AosrMaterialSchema):
-    name: str
-    units: str
+class DBAosrMaterialSchema(AosrMaterialSchema):
+    id: int
+    material: DBMaterialSchema

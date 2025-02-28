@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-
 from .base import BaseSchema
 
 if TYPE_CHECKING:

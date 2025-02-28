@@ -1,12 +1,21 @@
-from app.schemas.aosr_material import AosrMaterialSchema
-from app.schemas import BaseSchema
+from typing import TYPE_CHECKING
+
+from .base import BaseSchema
+
+if TYPE_CHECKING:
+    from .aosr_material import AosrMaterialSchema, DBAosrMaterialSchema
 
 
 class AosrSchema(BaseSchema):
-    id: int | None = None
-    name: str
+    project_id: int
     section_id: int
-
-
-class AosrWithMaterialsSchema(AosrSchema):
+    name: str
     materials: list[AosrMaterialSchema]
+
+
+class DBAosrSchema(BaseSchema):
+    id: int
+    project_id: int
+    section_id: int
+    name: str
+    materials: list[DBAosrMaterialSchema]
