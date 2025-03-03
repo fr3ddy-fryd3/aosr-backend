@@ -9,12 +9,8 @@ if TYPE_CHECKING:
 
 
 class AosrMaterial(Base):
-    aosr_id: Mapped[int] = mapped_column(
-        ForeignKey("aosrs.id"), nullable=True, index=True
-    )
-    material_id: Mapped[int] = mapped_column(
-        ForeignKey("materials.id"), nullable=True, index=True
-    )
+    aosr_id: Mapped[int] = mapped_column(ForeignKey("aosrs.id"), nullable=True)
+    material_id: Mapped[int] = mapped_column(ForeignKey("materials.id"), nullable=True)
     volume: Mapped[float]
 
     aosr: Mapped["Aosr"] = relationship(back_populates="materials")

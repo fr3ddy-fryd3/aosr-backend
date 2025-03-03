@@ -9,9 +9,7 @@ if TYPE_CHECKING:
 
 
 class Aosr(Base):
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id"), nullable=False, index=True
-    )
+    section_id: Mapped[int] = mapped_column(ForeignKey("sections.id"), nullable=False)
     name: Mapped[str]
 
     section: Mapped["Section"] = relationship(back_populates="aosrs")

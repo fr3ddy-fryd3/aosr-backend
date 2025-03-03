@@ -9,12 +9,8 @@ if TYPE_CHECKING:
 
 
 class SectionMaterial(Base):
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id"), nullable=False, index=True
-    )
-    material_id: Mapped[int] = mapped_column(
-        ForeignKey("materials.id"), nullable=False, index=True
-    )
+    section_id: Mapped[int] = mapped_column(ForeignKey("sections.id"), nullable=False)
+    material_id: Mapped[int] = mapped_column(ForeignKey("materials.id"), nullable=False)
     volume: Mapped[float]
 
     section: Mapped["Section"] = relationship(back_populates="materials")

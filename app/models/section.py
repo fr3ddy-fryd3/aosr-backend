@@ -10,9 +10,7 @@ if TYPE_CHECKING:
 
 
 class Section(Base):
-    project_id: Mapped[int] = mapped_column(
-        ForeignKey("projects.id"), nullable=False, index=True
-    )
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), nullable=False)
     name: Mapped[str] = mapped_column(unique=True)
 
     project: Mapped["Project"] = relationship(back_populates="sections")
