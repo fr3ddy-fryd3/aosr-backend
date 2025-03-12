@@ -14,4 +14,4 @@ class ProjectMaterial(Base):
     volume: Mapped[float]
 
     project: Mapped["Project"] = relationship(back_populates="materials")
-    material: Mapped["Material"] = relationship(back_populates="materials")
+    material: Mapped["Material"] = relationship(back_populates="project_materials")

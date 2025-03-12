@@ -1,65 +1,84 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.models.aosr_material import AosrMaterial
-from app.repositories.base import BaseRepository
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from app.models.aosr import Aosr
-from app.schemas.aosr import AosrSchema, AosrWithMaterialsSchema
+from app.models.aosr_material import AosrMaterial
+from app.schemas.aosr import AosrSchema, DBAosrSchema
 
 
-class AosrRepository(
-    BaseRepository[
-        Aosr,
-        AosrSchema,
-    ]
-):
-    Model = Aosr
-    Schema = AosrSchema
+class AosrRepository:
+    async def get_all(self, session: AsyncSession):
+        stmt = select(Aosr).options(selectinload(Aosr.materials))
+        raw_result = await session.execute(stmt)
+        db_aosrs = raw_result.scalars().all()
 
-    @classmethod
-    async def get_by_section_id(
-        cls, session: AsyncSession, section_id: int
-    ) -> list[Schema]:
-        stmt = select(cls.Model).where(cls.Model.section_id == section_id)
-        raw_result = await session.scalars(stmt)
-        result = raw_result.all()
-        aosrs = [cls.Schema.model_validate(aosr) for aosr in result]
-        print(aosrs)
+        aosrs = (
+            [DBAosrSchema.model_validate(db_aosr) for db_aosr in db_aosrs]
+            if len(db_aosrs) > 0
+            else []
+        )
+        return aosrs
 
-        return list(aosrs)
+    async def get_by_id(self, session: AsyncSession, id: int):
+        stmt = select(Aosr).options(selectinload(Aosr.materials)).where(Aosr.id == id)
+        raw_result = await session.execute(stmt)
+        db_aosr = raw_result.scalars().one_or_none()
 
-    @classmethod
-    async def create_aosr_and_its_materials(
-        cls, session: AsyncSession, data: AosrWithMaterialsSchema
-    ) -> None:
-        aosr = cls.Model(name=data.name, section_id=data.section_id)
-        session.add(aosr)
-        await session.flush()
+        aosr = DBAosrSchema.model_validate(db_aosr) if db_aosr else None
+        return aosr
 
-        for aosr_material in data.materials:
-            aosr_material = AosrMaterial(
-                aosr_id=aosr.id,
-                material_id=aosr_material.material_id,
-                volume=aosr_material.volume,
-            )
-            session.add(aosr_material)
+    async def create(self, session: AsyncSession, aosr_data: AosrSchema):
+        try:
+            aosr_dict = aosr_data.model_dump(exclude={"materials"})
+            aosr = Aosr(**aosr_dict)
 
-        await session.commit()
+            aosr.materials = [
+                AosrMaterial(**material.model_dump())
+                for material in aosr_data.materials
+            ]
 
-    @classmethod
-    async def update_aosr_and_its_materials(
-        cls, session: AsyncSession, data: AosrWithMaterialsSchema
-    ) -> None:
-        aosr = cls.Model(id=data.id, name=data.name, section_id=data.section_id)
-        await session.merge(aosr)
-        await session.flush()
+            session.add(aosr)
+            await session.commit()
+            await session.refresh(aosr, ["materials"])
 
-        for aosr_material in data.materials:
-            aosr_material = AosrMaterial(
-                id=aosr_material.id,
-                aosr_id=aosr.id,
-                material_id=aosr_material.material_id,
-                volume=aosr_material.volume,
-            )
-            await session.merge(aosr_material)
+            return DBAosrSchema.model_validate(aosr)
+        except Exception as e:
+            await session.rollback()
+            raise e
 
-        await session.commit()
+    async def update(self, session: AsyncSession, id: int, data: dict):
+        stmt = select(Aosr).where(Aosr.id == id)
+        raw_result = await session.execute(stmt)
+        db_aosr = raw_result.scalars().one_or_none()
+
+        if db_aosr is None:
+            return None
+
+        try:
+            columns = [column.name for column in Aosr.__table__.columns]
+
+            for field, value in data.items():
+                if field in columns:
+                    setattr(db_aosr, field, value)
+                else:
+                    print(f"Поле {field} отсутствует в таблице Material")
+
+            await session.commit()
+            return DBAosrSchema.model_validate(db_aosr)
+        except Exception as e:
+            print(e)
+            await session.rollback()
+            return None
+
+    async def delete(self, session: AsyncSession, id: int):
+        stmt = select(Aosr).where(Aosr.id == id).options(selectinload(Aosr.materials))
+        raw_result = await session.execute(stmt)
+        db_aosr = raw_result.scalars().one_or_none()
+
+        if db_aosr:
+            await session.delete(db_aosr)
+            await session.commit()
+            return DBAosrSchema.model_validate(db_aosr)
+        else:
+            return None

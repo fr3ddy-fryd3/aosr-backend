@@ -1,28 +1,41 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Response, HTTPException
+from starlette.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
 
-from app.controllers.base import SessionDep
+from .base import SessionDep
 from app.repositories.project import ProjectRepository
 from app.schemas.project import ProjectSchema
 
 project_rep = ProjectRepository()
-project_router = APIRouter(prefix="/api-v1/project")
+project_router = APIRouter(prefix="/api/v1/project")
 
 
 @project_router.get("/")
-def get_project(session: SessionDep, response: Response, id: int | None):
-    if id is not None:
-        project_response = project_rep.get_by_id(session, id)
+async def get_project(session: SessionDep, id: int = 0):
+    if id:
+        project_response = await project_rep.get_by_id(session, id)
         if project_response:
             return project_response
         else:
-            response.status_code = status.HTTP_404_NOT_FOUND
+            raise HTTPException(HTTP_404_NOT_FOUND, "Project is not found")
+
     else:
-        project_response = project_rep.get_all(session)
-        return project_response
+        projects_response = await project_rep.get_all(session)
+        return projects_response
 
 
 @project_router.post("/")
 async def create_project(
-    session: SessionDep, response: Response, project_obj: ProjectSchema
+    session: SessionDep, response: Response, project_data: ProjectSchema
 ):
-    pass
+    project_response = await project_rep.create(session, project_data)
+    response.status_code = HTTP_201_CREATED
+    return project_response
+
+
+@project_router.delete("/{id}")
+async def delete_project(session: SessionDep, id: int):
+    project_response = await project_rep.delete(session, id)
+    if project_response:
+        return project_response
+    else:
+        raise HTTPException(HTTP_404_NOT_FOUND, "Project is not found")

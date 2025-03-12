@@ -1,75 +1,92 @@
-from app.models.material import Material
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from app.models.section import Section
 from app.models.section_material import SectionMaterial
-from app.repositories.base import BaseRepository
-from app.schemas.section import SectionSchema, SectionWithMaterialsSchema
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.section import SectionSchema, DBSectionSchema
 
 
-class SectionRepository(BaseRepository[Section, SectionSchema]):
-    Model = Section
-    Schema = SectionSchema
+class SectionRepository:
+    async def get_all(self, session: AsyncSession):
+        stmt = select(Section).options(selectinload(Section.materials))
+        raw_result = await session.execute(stmt)
+        db_sections = raw_result.scalars().all()
 
-    @classmethod
-    async def create_section_and_its_materials(
-        cls, session: AsyncSession, data: SectionWithMaterialsSchema
-    ):
-        section = cls.Model(name=data.name)
-        session.add(section)
-        await session.flush()  # Для получения ID раздела
+        sections = (
+            [DBSectionSchema.model_validate(db_section) for db_section in db_sections]
+            if len(db_sections) > 0
+            else []
+        )
+        return sections
 
-        for section_material in data.materials:
-            if section_material.material_id is not None:
-                section_material_entry = SectionMaterial(
-                    material_id=section_material.material_id,
-                    section_id=section.id,
-                    volume=section_material.volume,
-                )
-                session.add(section_material_entry)
-            else:
-                new_material = Material(
-                    name=section_material.name, units=section_material.units
-                )
-                session.add(new_material)
-                await session.flush()  # Получаем ID нового материала
+    async def get_by_id(self, session: AsyncSession, id: int):
+        stmt = (
+            select(Section)
+            .options(selectinload(Section.materials))
+            .where(Section.id == id)
+        )
+        raw_result = await session.execute(stmt)
+        db_section = raw_result.scalars().one_or_none()
 
-                section_material_entry = SectionMaterial(
-                    material_id=new_material.id,
-                    section_id=section.id,
-                    volume=section_material.volume,
-                )
-                session.add(section_material_entry)
+        section = DBSectionSchema.model_validate(db_section) if db_section else None
+        return section
 
-        await session.commit()
+    async def create(self, session: AsyncSession, section_data: SectionSchema):
+        try:
+            section_dict = section_data.model_dump(exclude={"materials"})
+            section = Section(**section_dict)
 
-    @classmethod
-    async def update_section_and_its_materials(
-        cls, session: AsyncSession, data: SectionWithMaterialsSchema
-    ):
-        section = cls.Model(id=data.id, name=data.name)
-        await session.merge(section)
-        await session.flush()  # Получаем актуальную информацию для связки
+            section.materials = [
+                SectionMaterial(**material.model_dump())
+                for material in section_data.materials
+            ]
 
-        for section_material in data.materials:
-            if not section_material.material_id:
-                new_material = Material(
-                    name=section_material.name, units=section_material.units
-                )
-                session.add(new_material)
-                await session.flush()  # Получаем ID нового материала
+            session.add(section)
+            await session.commit()
+            await session.refresh(section, ["materials"])
 
-            material = SectionMaterial(
-                id=section_material.id if section_material.id else None,
-                section_id=section.id,
-                material_id=(
-                    new_material.id
-                    if "new_material" in locals()
-                    else section_material.material_id
-                ),
-                volume=section_material.volume,
-            )
+            return DBSectionSchema.model_validate(section)
+        except Exception as e:
+            await session.rollback()
+            raise e
 
-            await session.merge(material)
+    async def update(self, session: AsyncSession, id: int, data: dict):
+        stmt = select(Section).where(Section.id == id)
+        raw_result = await session.execute(stmt)
+        db_section = raw_result.scalars().one_or_none()
 
-        await session.commit()
+        if db_section is None:
+            return None
 
+        try:
+            columns = [column.name for column in Section.__table__.columns]
+
+            for field, value in data.items():
+                if field in columns:
+                    setattr(db_section, field, value)
+                else:
+                    print(f"Поле {field} отсутствует в таблице Material")
+
+            await session.commit()
+            return DBSectionSchema.model_validate(db_section)
+        except Exception as e:
+            print(e)
+            await session.rollback()
+            return None
+
+    async def delete(self, session: AsyncSession, id: int):
+        stmt = (
+            select(Section)
+            .where(Section.id == id)
+            .options(selectinload(Section.materials))
+        )
+        raw_result = await session.execute(stmt)
+        db_section = raw_result.scalars().one_or_none()
+
+        if db_section:
+            await session.delete(db_section)
+            await session.commit()
+            return DBSectionSchema.model_validate(db_section)
+        else:
+            return None

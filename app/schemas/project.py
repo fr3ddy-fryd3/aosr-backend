@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 from .base import BaseSchema
 
-if TYPE_CHECKING:
-    from .project_material import ProjectMaterialSchema, DBProjectMaterialSchema
+from .project_material import ProjectMaterialSchema, DBProjectMaterialSchema
 
 
 class ProjectSchema(BaseSchema):

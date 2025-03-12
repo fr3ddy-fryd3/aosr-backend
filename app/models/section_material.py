@@ -14,4 +14,4 @@ class SectionMaterial(Base):
     volume: Mapped[float]
 
     section: Mapped["Section"] = relationship(back_populates="materials")
-    material: Mapped["Material"] = relationship(back_populates="materials")
+    material: Mapped["Material"] = relationship(back_populates="section_materials")

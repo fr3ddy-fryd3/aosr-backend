@@ -7,5 +7,4 @@ aiosqlite
 pydantic
 pydantic-settings
 pytest-asyncio
-pytest-cov
 httpx
