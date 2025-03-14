@@ -32,6 +32,15 @@ async def create_project(
     return project_response
 
 
+@project_router.patch("/{id}")
+async def update_project(session: SessionDep, id: int, fields: dict):
+    project_response = await project_rep.update(session, id, fields)
+    if project_response:
+        return project_response
+    else:
+        raise HTTPException(HTTP_404_NOT_FOUND, "project is not found")
+
+
 @project_router.delete("/{id}")
 async def delete_project(session: SessionDep, id: int):
     project_response = await project_rep.delete(session, id)

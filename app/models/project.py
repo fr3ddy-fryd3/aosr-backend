@@ -12,9 +12,6 @@ if TYPE_CHECKING:
 class Project(Base):
     name: Mapped[str] = mapped_column(unique=True)
 
-    passports: Mapped[list["Passport"]] = relationship(
-        back_populates="project", cascade="all"
-    )
     sections: Mapped[list["Section"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )

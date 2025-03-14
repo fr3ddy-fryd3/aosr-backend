@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING
 from .base import BaseSchema
-
-if TYPE_CHECKING:
-    from .material import DBMaterialSchema
+from .material import DBMaterialSchema
 
 
 class SectionMaterialSchema(BaseSchema):

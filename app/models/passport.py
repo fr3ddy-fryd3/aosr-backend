@@ -2,8 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import ForeignKey
 from app.models.aosr_material import AosrMaterial
 from app.models.base import Base
-from app.models.project import Project
-from app.models.section import Section
+from app.models.material import Material
 
 
 class Passport(Base):
@@ -11,12 +10,20 @@ class Passport(Base):
     number: Mapped[int] = mapped_column(unique=True)
     volume: Mapped[int]
 
-    projects: Mapped[list["Project"]] = relationship(
-        back_populates="passports", cascade="all"
+    aosr_usages: Mapped[list["PassportAosrUsage"]] = relationship(
+        back_populates="passport"
     )
-    sections: Mapped[list["Section"]] = relationship(
-        back_populates="passports", cascade="all"
-    )
-    aosr_materials: Mapped[list["AosrMaterial"]] = relationship(
-        back_populates="passport", cascade="all"
-    )
+    material: Mapped["Material"] = relationship(back_populates="passports")
+
+    def avaible_volume(self):
+        used_volume = sum(usage.used_volume for usage in self.aosr_usages)
+        return self.volume - used_volume
+
+
+class PassportAosrUsage(Base):
+    aosr_id: Mapped[int] = mapped_column(ForeignKey("aosrs.id"))
+    passport_id: Mapped[int] = mapped_column(ForeignKey("passports.id"))
+    used_volume: Mapped[int] = mapped_column(nullable=False)
+
+    aosr: Mapped["AosrMaterial"] = relationship(back_populates="passport_usages")
+    passport: Mapped["Passport"] = relationship(back_populates="aosr_usages")

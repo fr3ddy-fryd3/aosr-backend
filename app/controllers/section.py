@@ -32,6 +32,15 @@ async def create_section(
     return section_response
 
 
+@section_router.patch("/{id}")
+async def update_section(session: SessionDep, id: int, fields: dict):
+    section_response = await section_rep.update(session, id, fields)
+    if section_response:
+        return section_response
+    else:
+        raise HTTPException(HTTP_404_NOT_FOUND, "section is not found")
+
+
 @section_router.delete("/{id}")
 async def delete_section(session: SessionDep, id: int):
     section_response = await section_rep.delete(session, id)
