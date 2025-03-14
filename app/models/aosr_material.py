@@ -17,7 +17,7 @@ class AosrMaterial(Base):
     aosr: Mapped["Aosr"] = relationship(back_populates="materials")
     material: Mapped["Material"] = relationship(back_populates="aosr_materials")
     passport_usages: Mapped[list["PassportAosrUsage"]] = relationship(
-        back_populates="aosr"
+        back_populates="aosr_material"
     )
 
     def used_volume(self):

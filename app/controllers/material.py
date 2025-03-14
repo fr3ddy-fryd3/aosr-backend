@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response, HTTPException
-from starlette.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from .base import SessionDep
 from app.repositories.material import MaterialRepository
@@ -27,18 +27,24 @@ async def get_material(session: SessionDep, id: int = 0):
 async def create_material(
     session: SessionDep, response: Response, material_data: MaterialSchema
 ):
-    material_response = await material_rep.create(session, material_data)
-    response.status_code = HTTP_201_CREATED
-    return material_response
+    try:
+        material_response = await material_rep.create(session, material_data)
+        response.status_code = HTTP_201_CREATED
+        return material_response
+    except Exception as e:
+        raise HTTPException(HTTP_400_BAD_REQUEST, e)
 
 
 @material_router.patch("/{id}")
 async def update_material(session: SessionDep, id: int, fields: dict):
-    material_response = await material_rep.update(session, id, fields)
-    if material_response:
-        return material_response
-    else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "Material is not found")
+    try:
+        material_response = await material_rep.update(session, id, fields)
+        if material_response:
+            return material_response
+        else:
+            raise HTTPException(HTTP_404_NOT_FOUND, "Material is not found")
+    except Exception as e:
+        raise HTTPException(HTTP_400_BAD_REQUEST, e)
 
 
 @material_router.delete("/{id}")

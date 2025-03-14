@@ -21,9 +21,11 @@ class Passport(Base):
 
 
 class PassportAosrUsage(Base):
-    aosr_id: Mapped[int] = mapped_column(ForeignKey("aosrs.id"))
+    aosr_material_id: Mapped[int] = mapped_column(ForeignKey("aosrmaterials.id"))
     passport_id: Mapped[int] = mapped_column(ForeignKey("passports.id"))
     used_volume: Mapped[int] = mapped_column(nullable=False)
 
-    aosr: Mapped["AosrMaterial"] = relationship(back_populates="passport_usages")
+    aosr_material: Mapped["AosrMaterial"] = relationship(
+        back_populates="passport_usages"
+    )
     passport: Mapped["Passport"] = relationship(back_populates="aosr_usages")
