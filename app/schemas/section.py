@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from .base import BaseSchema
 from .section_material import DBSectionMaterialSchema, SectionMaterialSchema
 

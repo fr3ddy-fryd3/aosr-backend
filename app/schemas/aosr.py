@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 
 
 class AosrSchema(BaseSchema):
-    project_id: int
     section_id: int
     name: str
     materials: list[AosrMaterialSchema]
@@ -15,7 +14,6 @@ class AosrSchema(BaseSchema):
 
 class DBAosrSchema(BaseSchema):
     id: int
-    project_id: int
     section_id: int
     name: str
     materials: list[DBAosrMaterialSchema]

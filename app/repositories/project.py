@@ -8,31 +8,27 @@ from app.schemas.project import ProjectSchema, DBProjectSchema
 
 
 class ProjectRepository:
-    async def get_all(self, session: AsyncSession):
+    async def get_all(self, session: AsyncSession) -> list[DBProjectSchema]:
         stmt = select(Project).options(selectinload(Project.materials))
-        raw_result = await session.execute(stmt)
-        db_projects = raw_result.scalars().all()
+        result = await session.execute(stmt)
+        projects = result.scalars().all()
 
-        projects = (
-            [DBProjectSchema.model_validate(db_project) for db_project in db_projects]
-            if len(db_projects) > 0
-            else []
-        )
-        return projects
+        return [DBProjectSchema.model_validate(project) for project in projects]
 
-    async def get_by_id(self, session: AsyncSession, id: int):
+    async def get_by_id(self, session: AsyncSession, id: int) -> DBProjectSchema | None:
         stmt = (
             select(Project)
             .where(Project.id == id)
             .options(selectinload(Project.materials))
         )
-        raw_result = await session.execute(stmt)
-        db_project = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        project = result.scalars().one_or_none()
 
-        project = DBProjectSchema.model_validate(db_project) if db_project else None
-        return project
+        return DBProjectSchema.model_validate(project) if project else None
 
-    async def create(self, session: AsyncSession, project_data: ProjectSchema):
+    async def create(
+        self, session: AsyncSession, project_data: ProjectSchema
+    ) -> DBProjectSchema:
         try:
             project_dict = project_data.model_dump(exclude={"materials"})
             project = Project(**project_dict)
@@ -51,12 +47,14 @@ class ProjectRepository:
             await session.rollback()
             raise e
 
-    async def update(self, session: AsyncSession, id: int, data: dict):
+    async def update(
+        self, session: AsyncSession, id: int, data: dict
+    ) -> DBProjectSchema | None:
         stmt = select(Project).where(Project.id == id)
-        raw_result = await session.execute(stmt)
-        db_project = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        project = result.scalars().one_or_none()
 
-        if db_project is None:
+        if project is None:
             return None
 
         try:
@@ -64,29 +62,29 @@ class ProjectRepository:
 
             for field, value in data.items():
                 if field in columns:
-                    setattr(db_project, field, value)
+                    setattr(project, field, value)
                 else:
-                    print(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"Поле {field} отсутствует в таблице Material")
 
             await session.commit()
-            return DBProjectSchema.model_validate(db_project)
+            await session.refresh(project, ["materials"])
+            return DBProjectSchema.model_validate(project)
         except Exception as e:
-            print(e)
             await session.rollback()
-            return None
+            raise e
 
-    async def delete(self, session: AsyncSession, id: int):
+    async def delete(self, session: AsyncSession, id: int) -> bool:
         stmt = (
             select(Project)
             .where(Project.id == id)
             .options(selectinload(Project.materials))
         )
-        raw_result = await session.execute(stmt)
-        db_project = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        project = result.scalars().one_or_none()
 
-        if db_project:
-            await session.delete(db_project)
+        if project:
+            await session.delete(project)
             await session.commit()
-            return DBProjectSchema.model_validate(db_project)
+            return True
         else:
-            return None
+            return False

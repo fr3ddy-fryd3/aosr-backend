@@ -6,11 +6,12 @@ if TYPE_CHECKING:
 
 
 class AosrMaterialSchema(BaseSchema):
-    aosr_id: int
     material_id: int
     volume: float
 
 
 class DBAosrMaterialSchema(AosrMaterialSchema):
     id: int
+    aosr_id: int
     material: DBMaterialSchema
+    used_volume: int

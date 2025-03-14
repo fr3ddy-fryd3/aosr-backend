@@ -6,43 +6,41 @@ from app.schemas.passport import PassportSchema, DBPassportSchema
 
 
 class PassportRepository:
-    async def get_all(self, session: AsyncSession):
+    async def get_all(self, session: AsyncSession) -> list[DBPassportSchema]:
         stmt = select(Passport)
-        raw_result = await session.execute(stmt)
-        db_passport = raw_result.scalars().all()
+        result = await session.execute(stmt)
+        passport = result.scalars().all()
 
-        passports = (
-            [DBPassportSchema.model_validate(passport) for passport in db_passport]
-            if len(db_passport) > 0
-            else []
-        )
+        return [DBPassportSchema.model_validate(passport) for passport in passport]
 
-        return passports
-
-    async def get_by_id(self, session: AsyncSession, id: int):
+    async def get_by_id(
+        self, session: AsyncSession, id: int
+    ) -> DBPassportSchema | None:
         stmt = select(Passport).where(Passport.id == id)
-        raw_result = await session.execute(stmt)
-        db_passport = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        passport = result.scalars().one_or_none()
 
-        passport = DBPassportSchema.model_validate(db_passport) if db_passport else None
+        return DBPassportSchema.model_validate(passport) if passport else None
 
-        return passport
-
-    async def create(self, session: AsyncSession, passport_data: PassportSchema):
+    async def create(
+        self, session: AsyncSession, passport_data: PassportSchema
+    ) -> DBPassportSchema | None:
         passport = Passport(**passport_data.model_dump())
 
         session.add(passport)
         await session.commit()
         await session.refresh(passport)
 
-        return PassportSchema.model_validate(passport)
+        return DBPassportSchema.model_validate(passport)
 
-    async def update(self, session: AsyncSession, id: int, data: dict):
+    async def update(
+        self, session: AsyncSession, id: int, data: dict
+    ) -> DBPassportSchema | None:
         stmt = select(Passport).where(Passport.id == id)
-        raw_result = await session.execute(stmt)
-        db_passport = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        passport = result.scalars().one_or_none()
 
-        if db_passport is None:
+        if passport is None:
             return None
 
         try:
@@ -50,24 +48,23 @@ class PassportRepository:
 
             for field, value in data.items():
                 if field in columns:
-                    setattr(db_passport, field, value)
+                    setattr(passport, field, value)
                 else:
-                    print(f"Поле {field} отсутствует в таблице Passport")
+                    raise ValueError(f"Поле {field} отсутствует в таблице Passport")
 
             await session.commit()
-            return DBPassportSchema.model_validate(db_passport)
+            return DBPassportSchema.model_validate(passport)
         except Exception as e:
-            print(e)
             await session.rollback()
-            return None
+            raise e
 
-    async def delete(self, session: AsyncSession, id: int):
+    async def delete(self, session: AsyncSession, id: int) -> bool:
         stmt = select(Passport).where(Passport.id == id)
-        raw_result = await session.execute(stmt)
-        db_passport = raw_result.scalars().one_or_none()
-        if db_passport:
-            await session.delete(db_passport)
+        result = await session.execute(stmt)
+        passport = result.scalars().one_or_none()
+        if passport:
+            await session.delete(passport)
             await session.commit()
-            return DBPassportSchema.model_validate(db_passport)
+            return True
         else:
-            return None
+            return False

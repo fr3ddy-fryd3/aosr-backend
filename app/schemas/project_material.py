@@ -12,3 +12,4 @@ class ProjectMaterialSchema(BaseSchema):
 class DBProjectMaterialSchema(ProjectMaterialSchema):
     id: int
     project_id: int
+    material: DBMaterialSchema

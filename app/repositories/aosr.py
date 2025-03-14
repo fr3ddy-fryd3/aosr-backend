@@ -8,27 +8,24 @@ from app.schemas.aosr import AosrSchema, DBAosrSchema
 
 
 class AosrRepository:
-    async def get_all(self, session: AsyncSession):
+    async def get_all(self, session: AsyncSession) -> list[DBAosrSchema]:
         stmt = select(Aosr).options(selectinload(Aosr.materials))
-        raw_result = await session.execute(stmt)
-        db_aosrs = raw_result.scalars().all()
+        result = await session.execute(stmt)
+        aosrs = result.scalars().all()
 
-        aosrs = (
-            [DBAosrSchema.model_validate(db_aosr) for db_aosr in db_aosrs]
-            if len(db_aosrs) > 0
-            else []
-        )
-        return aosrs
+        return [DBAosrSchema.model_validate(aosr) for aosr in aosrs]
 
-    async def get_by_id(self, session: AsyncSession, id: int):
+    async def get_by_id(self, session: AsyncSession, id: int) -> DBAosrSchema | None:
         stmt = select(Aosr).options(selectinload(Aosr.materials)).where(Aosr.id == id)
-        raw_result = await session.execute(stmt)
-        db_aosr = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        aosr = result.scalars().one_or_none()
 
-        aosr = DBAosrSchema.model_validate(db_aosr) if db_aosr else None
+        aosr = DBAosrSchema.model_validate(aosr) if aosr else None
         return aosr
 
-    async def create(self, session: AsyncSession, aosr_data: AosrSchema):
+    async def create(
+        self, session: AsyncSession, aosr_data: AosrSchema
+    ) -> DBAosrSchema:
         try:
             aosr_dict = aosr_data.model_dump(exclude={"materials"})
             aosr = Aosr(**aosr_dict)
@@ -47,12 +44,14 @@ class AosrRepository:
             await session.rollback()
             raise e
 
-    async def update(self, session: AsyncSession, id: int, data: dict):
+    async def update(
+        self, session: AsyncSession, id: int, data: dict
+    ) -> DBAosrSchema | None:
         stmt = select(Aosr).where(Aosr.id == id)
-        raw_result = await session.execute(stmt)
-        db_aosr = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        aosr = result.scalars().one_or_none()
 
-        if db_aosr is None:
+        if aosr is None:
             return None
 
         try:
@@ -60,25 +59,24 @@ class AosrRepository:
 
             for field, value in data.items():
                 if field in columns:
-                    setattr(db_aosr, field, value)
+                    setattr(aosr, field, value)
                 else:
-                    print(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"Поле {field} отсутствует в таблице Material")
 
             await session.commit()
-            return DBAosrSchema.model_validate(db_aosr)
+            return DBAosrSchema.model_validate(aosr)
         except Exception as e:
-            print(e)
             await session.rollback()
-            return None
+            raise e
 
-    async def delete(self, session: AsyncSession, id: int):
+    async def delete(self, session: AsyncSession, id: int) -> bool:
         stmt = select(Aosr).where(Aosr.id == id).options(selectinload(Aosr.materials))
-        raw_result = await session.execute(stmt)
-        db_aosr = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        aosr = result.scalars().one_or_none()
 
-        if db_aosr:
-            await session.delete(db_aosr)
+        if aosr:
+            await session.delete(aosr)
             await session.commit()
-            return DBAosrSchema.model_validate(db_aosr)
+            return True
         else:
-            return None
+            return False

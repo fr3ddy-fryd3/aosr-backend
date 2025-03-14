@@ -6,43 +6,45 @@ from app.schemas.material import MaterialSchema, DBMaterialSchema
 
 
 class MaterialRepository:
-    async def get_all(self, session: AsyncSession):
+    async def get_all(self, session: AsyncSession) -> list[DBMaterialSchema]:
         stmt = select(Material)
-        raw_result = await session.execute(stmt)
-        db_material = raw_result.scalars().all()
+        result = await session.execute(stmt)
+        materials = result.scalars().all()
 
-        materials = (
-            [DBMaterialSchema.model_validate(material) for material in db_material]
-            if len(db_material) > 0
-            else []
-        )
+        return [DBMaterialSchema.model_validate(material) for material in materials]
 
-        return materials
-
-    async def get_by_id(self, session: AsyncSession, id: int):
+    async def get_by_id(
+        self, session: AsyncSession, id: int
+    ) -> DBMaterialSchema | None:
         stmt = select(Material).where(Material.id == id)
-        raw_result = await session.execute(stmt)
-        db_material = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        material = result.scalars().one_or_none()
 
-        material = DBMaterialSchema.model_validate(db_material) if db_material else None
+        return DBMaterialSchema.model_validate(material) if material else None
 
-        return material
+    async def create(
+        self, session: AsyncSession, material_data: MaterialSchema
+    ) -> DBMaterialSchema:
+        try:
+            material = Material(**material_data.model_dump())
 
-    async def create(self, session: AsyncSession, material_data: MaterialSchema):
-        material = Material(**material_data.model_dump())
+            session.add(material)
+            await session.commit()
+            await session.refresh(material)
 
-        session.add(material)
-        await session.commit()
-        await session.refresh(material)
+            return DBMaterialSchema.model_validate(material)
+        except Exception as e:
+            await session.rollback()
+            raise e
 
-        return MaterialSchema.model_validate(material)
-
-    async def update(self, session: AsyncSession, id: int, data: dict):
+    async def update(
+        self, session: AsyncSession, id: int, data: dict
+    ) -> DBMaterialSchema | None:
         stmt = select(Material).where(Material.id == id)
-        raw_result = await session.execute(stmt)
-        db_material = raw_result.scalars().one_or_none()
+        result = await session.execute(stmt)
+        material = result.scalars().one_or_none()
 
-        if db_material is None:
+        if material is None:
             return None
 
         try:
@@ -50,24 +52,23 @@ class MaterialRepository:
 
             for field, value in data.items():
                 if field in columns:
-                    setattr(db_material, field, value)
+                    setattr(material, field, value)
                 else:
-                    print(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"поле {field} отсутствует в таблице material")
 
             await session.commit()
-            return DBMaterialSchema.model_validate(db_material)
+            return DBMaterialSchema.model_validate(material)
         except Exception as e:
-            print(e)
             await session.rollback()
-            return None
+            raise e
 
-    async def delete(self, session: AsyncSession, id: int):
+    async def delete(self, session: AsyncSession, id: int) -> bool:
         stmt = select(Material).where(Material.id == id)
         raw_result = await session.execute(stmt)
         db_material = raw_result.scalars().one_or_none()
         if db_material:
             await session.delete(db_material)
             await session.commit()
-            return DBMaterialSchema.model_validate(db_material)
+            return True
         else:
-            return None
+            return False
