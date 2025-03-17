@@ -9,14 +9,24 @@ from app.schemas.aosr import AosrSchema, DBAosrSchema
 
 class AosrRepository:
     async def get_all(self, session: AsyncSession) -> list[DBAosrSchema]:
-        stmt = select(Aosr).options(selectinload(Aosr.materials))
+        stmt = select(Aosr).options(
+            selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+            selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
+        )
         result = await session.execute(stmt)
         aosrs = result.scalars().all()
 
         return [DBAosrSchema.model_validate(aosr) for aosr in aosrs]
 
     async def get_by_id(self, session: AsyncSession, id: int) -> DBAosrSchema | None:
-        stmt = select(Aosr).options(selectinload(Aosr.materials)).where(Aosr.id == id)
+        stmt = (
+            select(Aosr)
+            .where(Aosr.id == id)
+            .options(
+                selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+                selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
+            )
+        )
         result = await session.execute(stmt)
         aosr = result.scalars().one_or_none()
 
@@ -38,6 +48,8 @@ class AosrRepository:
             session.add(aosr)
             await session.commit()
             await session.refresh(aosr, ["materials"])
+            for aosr_material in aosr.materials:
+                await session.refresh(aosr_material, ["material"])
 
             return DBAosrSchema.model_validate(aosr)
         except Exception as e:
@@ -64,6 +76,11 @@ class AosrRepository:
                     raise ValueError(f"Поле {field} отсутствует в таблице Material")
 
             await session.commit()
+            await session.refresh(aosr, ["materials"])
+            for aosr_material in aosr.materials:
+                await session.refresh(aosr_material, ["material"])
+                await session.refresh(aosr_material, ["passport_usages"])
+
             return DBAosrSchema.model_validate(aosr)
         except Exception as e:
             await session.rollback()

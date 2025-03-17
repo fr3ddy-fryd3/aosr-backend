@@ -6,6 +6,7 @@ from app.controllers import (
     project_router,
     section_router,
     passport_router,
+    aosr_router,
 )
 
 
@@ -14,6 +15,7 @@ app.include_router(material_router)
 app.include_router(project_router)
 app.include_router(section_router)
 app.include_router(passport_router)
+app.include_router(aosr_router)
 
 app.add_middleware(
     CORSMiddleware,

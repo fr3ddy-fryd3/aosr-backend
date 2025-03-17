@@ -20,5 +20,6 @@ class AosrMaterial(Base):
         back_populates="aosr_material"
     )
 
-    def used_volume(self):
+    @property
+    def used_volume(self) -> int:
         return sum(usage.used_volume for usage in self.passport_usages)
