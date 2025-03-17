@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from .base import BaseSchema
 
 from .material import DBMaterialSchema
@@ -12,4 +11,4 @@ class ProjectMaterialSchema(BaseSchema):
 class DBProjectMaterialSchema(ProjectMaterialSchema):
     id: int
     project_id: int
-    material: DBMaterialSchema
+    material: DBMaterialSchema | None

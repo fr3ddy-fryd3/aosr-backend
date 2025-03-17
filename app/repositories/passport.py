@@ -1,17 +1,21 @@
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.passport import Passport
+from app.schemas.material import DBMaterialSchema
 from app.schemas.passport import PassportSchema, DBPassportSchema
 
 
 class PassportRepository:
     async def get_all(self, session: AsyncSession) -> list[DBPassportSchema]:
-        stmt = select(Passport)
+        stmt = select(Passport).options(
+            selectinload(Passport.material), selectinload(Passport.aosr_usages)
+        )
         result = await session.execute(stmt)
-        passport = result.scalars().all()
+        passports = result.scalars().all()
 
-        return [DBPassportSchema.model_validate(passport) for passport in passport]
+        return [DBPassportSchema.model_validate(passport) for passport in passports]
 
     async def get_by_id(
         self, session: AsyncSession, id: int

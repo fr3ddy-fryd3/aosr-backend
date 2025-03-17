@@ -6,11 +6,11 @@ from app.schemas.material import DBMaterialSchema
 
 class PassportSchema(BaseSchema):
     material_id: int
-    number: int
+    number: str
     volume: int
 
 
 class DBPassportSchema(PassportSchema):
     id: int
-    avaible_volume: int
+    available_volume: int
     material: DBMaterialSchema

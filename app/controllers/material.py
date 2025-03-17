@@ -1,5 +1,11 @@
-from fastapi import APIRouter, Response, HTTPException
-from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+import logging
+from fastapi import APIRouter, Response
+from starlette.status import (
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from .base import SessionDep
 from app.repositories.material import MaterialRepository
@@ -10,13 +16,14 @@ material_router = APIRouter(prefix="/api/v1/material")
 
 
 @material_router.get("/")
-async def get_material(session: SessionDep, id: int = 0):
+async def get_material(session: SessionDep, response: Response, id: int = 0):
     if id:
         material_response = await material_rep.get_by_id(session, id)
         if material_response:
             return material_response
         else:
-            raise HTTPException(HTTP_404_NOT_FOUND, "Material is not found")
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Material is not found"}
 
     else:
         materials_response = await material_rep.get_all(session)
@@ -32,25 +39,34 @@ async def create_material(
         response.status_code = HTTP_201_CREATED
         return material_response
     except Exception as e:
-        raise HTTPException(HTTP_400_BAD_REQUEST, e)
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @material_router.patch("/{id}")
-async def update_material(session: SessionDep, id: int, fields: dict):
+async def update_material(
+    session: SessionDep, response: Response, id: int, fields: dict
+):
     try:
         material_response = await material_rep.update(session, id, fields)
         if material_response:
             return material_response
         else:
-            raise HTTPException(HTTP_404_NOT_FOUND, "Material is not found")
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Material is not found"}
     except Exception as e:
-        raise HTTPException(HTTP_400_BAD_REQUEST, e)
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @material_router.delete("/{id}")
-async def delete_material(session: SessionDep, id: int):
+async def delete_material(session: SessionDep, response: Response, id: int):
     material_response = await material_rep.delete(session, id)
     if material_response:
+        response.status_code = HTTP_204_NO_CONTENT
         return material_response
     else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "Material is not found")
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Material is not found"}

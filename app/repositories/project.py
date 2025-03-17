@@ -9,7 +9,9 @@ from app.schemas.project import ProjectSchema, DBProjectSchema
 
 class ProjectRepository:
     async def get_all(self, session: AsyncSession) -> list[DBProjectSchema]:
-        stmt = select(Project).options(selectinload(Project.materials))
+        stmt = select(Project).options(
+            selectinload(Project.materials).selectinload(ProjectMaterial.material)
+        )
         result = await session.execute(stmt)
         projects = result.scalars().all()
 
@@ -19,7 +21,9 @@ class ProjectRepository:
         stmt = (
             select(Project)
             .where(Project.id == id)
-            .options(selectinload(Project.materials))
+            .options(
+                selectinload(Project.materials).selectinload(ProjectMaterial.material)
+            )
         )
         result = await session.execute(stmt)
         project = result.scalars().one_or_none()
@@ -41,6 +45,8 @@ class ProjectRepository:
             session.add(project)
             await session.commit()
             await session.refresh(project, ["materials"])
+            for project_material in project.materials:
+                await session.refresh(project_material, ["material"])
 
             return DBProjectSchema.model_validate(project)
         except Exception as e:
@@ -68,6 +74,9 @@ class ProjectRepository:
 
             await session.commit()
             await session.refresh(project, ["materials"])
+            for project_material in project.materials:
+                await session.refresh(project_material, ["material"])
+
             return DBProjectSchema.model_validate(project)
         except Exception as e:
             await session.rollback()

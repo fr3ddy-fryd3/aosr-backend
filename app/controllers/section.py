@@ -1,5 +1,11 @@
-from fastapi import APIRouter, Response, HTTPException
-from starlette.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
+import logging
+from fastapi import APIRouter, Response
+from starlette.status import (
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from .base import SessionDep
 from app.repositories.section import SectionRepository
@@ -10,13 +16,14 @@ section_router = APIRouter(prefix="/api/v1/section")
 
 
 @section_router.get("/")
-async def get_section(session: SessionDep, id: int = 0):
+async def get_section(session: SessionDep, response: Response, id: int = 0):
     if id:
         section_response = await section_rep.get_by_id(session, id)
         if section_response:
             return section_response
         else:
-            raise HTTPException(HTTP_404_NOT_FOUND, "Section is not found")
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Section is not found"}
 
     else:
         sections_response = await section_rep.get_all(session)
@@ -27,24 +34,39 @@ async def get_section(session: SessionDep, id: int = 0):
 async def create_section(
     session: SessionDep, response: Response, section_data: SectionSchema
 ):
-    section_response = await section_rep.create(session, section_data)
-    response.status_code = HTTP_201_CREATED
-    return section_response
+    try:
+        section_response = await section_rep.create(session, section_data)
+        response.status_code = HTTP_201_CREATED
+        return section_response
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @section_router.patch("/{id}")
-async def update_section(session: SessionDep, id: int, fields: dict):
-    section_response = await section_rep.update(session, id, fields)
-    if section_response:
-        return section_response
-    else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "section is not found")
+async def update_section(
+    session: SessionDep, response: Response, id: int, fields: dict
+):
+    try:
+        section_response = await section_rep.update(session, id, fields)
+        if section_response:
+            return section_response
+        else:
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Section is not found"}
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @section_router.delete("/{id}")
-async def delete_section(session: SessionDep, id: int):
+async def delete_section(session: SessionDep, response: Response, id: int):
     section_response = await section_rep.delete(session, id)
     if section_response:
+        response.status_code = HTTP_204_NO_CONTENT
         return section_response
     else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "Section is not found")
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Section is not found"}

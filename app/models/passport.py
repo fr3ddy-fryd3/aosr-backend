@@ -7,7 +7,7 @@ from app.models.material import Material
 
 class Passport(Base):
     material_id: Mapped[int] = mapped_column(ForeignKey("materials.id"))
-    number: Mapped[int] = mapped_column(unique=True)
+    number: Mapped[str] = mapped_column(unique=True)
     volume: Mapped[int]
 
     aosr_usages: Mapped[list["PassportAosrUsage"]] = relationship(
@@ -15,7 +15,8 @@ class Passport(Base):
     )
     material: Mapped["Material"] = relationship(back_populates="passports")
 
-    def avaible_volume(self):
+    @property
+    def available_volume(self) -> int:
         used_volume = sum(usage.used_volume for usage in self.aosr_usages)
         return self.volume - used_volume
 

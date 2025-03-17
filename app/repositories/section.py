@@ -9,7 +9,9 @@ from app.schemas.section import SectionSchema, DBSectionSchema
 
 class SectionRepository:
     async def get_all(self, session: AsyncSession) -> list[DBSectionSchema]:
-        stmt = select(Section).options(selectinload(Section.materials))
+        stmt = select(Section).options(
+            selectinload(Section.materials).selectinload(SectionMaterial.material)
+        )
         result = await session.execute(stmt)
         sections = result.scalars().all()
 
@@ -18,7 +20,9 @@ class SectionRepository:
     async def get_by_id(self, session: AsyncSession, id: int) -> DBSectionSchema | None:
         stmt = (
             select(Section)
-            .options(selectinload(Section.materials))
+            .options(
+                selectinload(Section.materials).selectinload(SectionMaterial.material)
+            )
             .where(Section.id == id)
         )
         result = await session.execute(stmt)
@@ -41,6 +45,8 @@ class SectionRepository:
             session.add(section)
             await session.commit()
             await session.refresh(section, ["materials"])
+            for section_material in section.materials:
+                await session.refresh(section_material, ["material"])
 
             return DBSectionSchema.model_validate(section)
         except Exception as e:
@@ -67,6 +73,10 @@ class SectionRepository:
                     print(f"Поле {field} отсутствует в таблице Material")
 
             await session.commit()
+            await session.refresh(section, ["materials"])
+            for section_material in section.materials:
+                await session.refresh(section_material, ["material"])
+
             return DBSectionSchema.model_validate(section)
         except Exception as e:
             await session.rollback()

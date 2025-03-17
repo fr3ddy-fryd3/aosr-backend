@@ -1,5 +1,11 @@
-from fastapi import APIRouter, Response, HTTPException
-from starlette.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
+import logging
+from fastapi import APIRouter, Response
+from starlette.status import (
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from .base import SessionDep
 from app.repositories.project import ProjectRepository
@@ -10,14 +16,14 @@ project_router = APIRouter(prefix="/api/v1/project")
 
 
 @project_router.get("/")
-async def get_project(session: SessionDep, id: int = 0):
+async def get_project(session: SessionDep, response: Response, id: int = 0):
     if id:
         project_response = await project_rep.get_by_id(session, id)
         if project_response:
             return project_response
         else:
-            raise HTTPException(HTTP_404_NOT_FOUND, "Project is not found")
-
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Project is not found"}
     else:
         projects_response = await project_rep.get_all(session)
         return projects_response
@@ -27,24 +33,39 @@ async def get_project(session: SessionDep, id: int = 0):
 async def create_project(
     session: SessionDep, response: Response, project_data: ProjectSchema
 ):
-    project_response = await project_rep.create(session, project_data)
-    response.status_code = HTTP_201_CREATED
-    return project_response
+    try:
+        project_response = await project_rep.create(session, project_data)
+        response.status_code = HTTP_201_CREATED
+        return project_response
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @project_router.patch("/{id}")
-async def update_project(session: SessionDep, id: int, fields: dict):
-    project_response = await project_rep.update(session, id, fields)
-    if project_response:
-        return project_response
-    else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "project is not found")
+async def update_project(
+    session: SessionDep, response: Response, id: int, fields: dict
+):
+    try:
+        project_response = await project_rep.update(session, id, fields)
+        if project_response:
+            return project_response
+        else:
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Project is not found"}
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
 
 
 @project_router.delete("/{id}")
-async def delete_project(session: SessionDep, id: int):
+async def delete_project(session: SessionDep, response: Response, id: int):
     project_response = await project_rep.delete(session, id)
     if project_response:
-        return project_response
+        response.status_code = HTTP_204_NO_CONTENT
+        return {"msg": "Project is deleted"}
     else:
-        raise HTTPException(HTTP_404_NOT_FOUND, "Project is not found")
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Project is not found"}
