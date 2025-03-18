@@ -13,3 +13,9 @@ class DBSectionSchema(BaseSchema):
     project_id: int
     name: str
     materials: list[DBSectionMaterialSchema]
+
+
+class DBSectionSchemaForUpdate(BaseSchema):
+    id: int
+    project_id: int
+    name: str

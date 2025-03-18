@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.passport import Passport
-from app.schemas.material import DBMaterialSchema
 from app.schemas.passport import PassportSchema, DBPassportSchema
 
 
@@ -54,7 +53,7 @@ class PassportRepository:
                 if field in columns:
                     setattr(passport, field, value)
                 else:
-                    raise ValueError(f"Поле {field} отсутствует в таблице Passport")
+                    raise ValueError(f"Passport Table hasn't field {field}")
 
             await session.commit()
             return DBPassportSchema.model_validate(passport)

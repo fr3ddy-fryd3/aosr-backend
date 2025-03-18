@@ -9,9 +9,11 @@ from starlette.status import (
 
 from .base import SessionDep
 from app.repositories.aosr import AosrRepository
+from app.repositories.aosr_material import AosrMaterialRepository
 from app.schemas.aosr import AosrSchema
 
 aosr_rep = AosrRepository()
+aosr_material_rep = AosrMaterialRepository()
 aosr_router = APIRouter(prefix="/api/v1/aosr")
 
 
@@ -57,6 +59,23 @@ async def update_aosr(session: SessionDep, response: Response, id: int, fields: 
         return {"msg": "Bad request"}
 
 
+@aosr_router.patch("/material/{id}")
+async def update_aosr_material(
+    session: SessionDep, response: Response, id: int, fields: dict
+):
+    try:
+        aosr_material_response = await aosr_material_rep.update(session, id, fields)
+        if aosr_material_response:
+            return aosr_material_response
+        else:
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Aosr Material is not found"}
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
+
+
 @aosr_router.delete("/{id}")
 async def delete_aosr(session: SessionDep, response: Response, id: int):
     aosr_response = await aosr_rep.delete(session, id)
@@ -66,3 +85,14 @@ async def delete_aosr(session: SessionDep, response: Response, id: int):
     else:
         response.status_code = HTTP_404_NOT_FOUND
         return {"msg": "Aosr is not found"}
+
+
+@aosr_router.delete("/material/{id}")
+async def delete_aosr_material(session: SessionDep, response: Response, id: int):
+    aosr_material_response = await aosr_material_rep.delete(session, id)
+    if aosr_material_response:
+        response.status_code = HTTP_204_NO_CONTENT
+        return aosr_material_response
+    else:
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Aosr Material is not found"}

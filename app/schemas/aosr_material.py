@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from .base import BaseSchema
 
 from .material import DBMaterialSchema
@@ -14,3 +13,8 @@ class DBAosrMaterialSchema(AosrMaterialSchema):
     aosr_id: int
     material: DBMaterialSchema
     used_volume: int
+
+
+class DBAosrMaterialSchemaForUpdate(AosrMaterialSchema):
+    id: int
+    aosr_id: int

@@ -54,7 +54,7 @@ class MaterialRepository:
                 if field in columns:
                     setattr(material, field, value)
                 else:
-                    raise ValueError(f"поле {field} отсутствует в таблице material")
+                    raise ValueError(f"Material Table hasn't field {field}")
 
             await session.commit()
             return DBMaterialSchema.model_validate(material)

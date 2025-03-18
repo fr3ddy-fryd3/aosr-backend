@@ -11,4 +11,9 @@ class ProjectMaterialSchema(BaseSchema):
 class DBProjectMaterialSchema(ProjectMaterialSchema):
     id: int
     project_id: int
-    material: DBMaterialSchema | None
+    material: DBMaterialSchema
+
+
+class DBProjectMaterialSchemaForUpdate(ProjectMaterialSchema):
+    id: int
+    project_id: int

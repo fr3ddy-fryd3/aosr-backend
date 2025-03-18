@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.aosr import Aosr
 from app.models.aosr_material import AosrMaterial
-from app.schemas.aosr import AosrSchema, DBAosrSchema
+from app.schemas.aosr import AosrSchema, DBAosrSchema, DBAosrSchemaForUpdate
 
 
 class AosrRepository:
@@ -58,7 +58,7 @@ class AosrRepository:
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
-    ) -> DBAosrSchema | None:
+    ) -> DBAosrSchemaForUpdate | None:
         stmt = select(Aosr).where(Aosr.id == id)
         result = await session.execute(stmt)
         aosr = result.scalars().one_or_none()
@@ -73,21 +73,18 @@ class AosrRepository:
                 if field in columns:
                     setattr(aosr, field, value)
                 else:
-                    raise ValueError(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"Aosr Table hasn't field {field}")
 
             await session.commit()
-            await session.refresh(aosr, ["materials"])
-            for aosr_material in aosr.materials:
-                await session.refresh(aosr_material, ["material"])
-                await session.refresh(aosr_material, ["passport_usages"])
+            await session.refresh(aosr)
 
-            return DBAosrSchema.model_validate(aosr)
+            return DBAosrSchemaForUpdate.model_validate(aosr)
         except Exception as e:
             await session.rollback()
             raise e
 
     async def delete(self, session: AsyncSession, id: int) -> bool:
-        stmt = select(Aosr).where(Aosr.id == id).options(selectinload(Aosr.materials))
+        stmt = select(Aosr).where(Aosr.id == id)
         result = await session.execute(stmt)
         aosr = result.scalars().one_or_none()
 

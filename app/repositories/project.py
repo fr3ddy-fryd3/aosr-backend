@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.project import Project
 from app.models.project_material import ProjectMaterial
-from app.schemas.project import ProjectSchema, DBProjectSchema
+from app.schemas.project import ProjectSchema, DBProjectSchema, DBProjectSchemaForUpdate
 
 
 class ProjectRepository:
@@ -55,7 +55,7 @@ class ProjectRepository:
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
-    ) -> DBProjectSchema | None:
+    ) -> DBProjectSchemaForUpdate | None:
         stmt = select(Project).where(Project.id == id)
         result = await session.execute(stmt)
         project = result.scalars().one_or_none()
@@ -70,24 +70,18 @@ class ProjectRepository:
                 if field in columns:
                     setattr(project, field, value)
                 else:
-                    raise ValueError(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"Project Table hasn't field {field}")
 
             await session.commit()
-            await session.refresh(project, ["materials"])
-            for project_material in project.materials:
-                await session.refresh(project_material, ["material"])
+            await session.refresh(project)
 
-            return DBProjectSchema.model_validate(project)
+            return DBProjectSchemaForUpdate.model_validate(project)
         except Exception as e:
             await session.rollback()
             raise e
 
     async def delete(self, session: AsyncSession, id: int) -> bool:
-        stmt = (
-            select(Project)
-            .where(Project.id == id)
-            .options(selectinload(Project.materials))
-        )
+        stmt = select(Project).where(Project.id == id)
         result = await session.execute(stmt)
         project = result.scalars().one_or_none()
 

@@ -9,9 +9,11 @@ from starlette.status import (
 
 from .base import SessionDep
 from app.repositories.project import ProjectRepository
+from app.repositories.project_material import ProjectMaterialRepository
 from app.schemas.project import ProjectSchema
 
 project_rep = ProjectRepository()
+project_material_rep = ProjectMaterialRepository()
 project_router = APIRouter(prefix="/api/v1/project")
 
 
@@ -60,6 +62,25 @@ async def update_project(
         return {"msg": "Bad request"}
 
 
+@project_router.patch("/material/{id}")
+async def update_project_material(
+    session: SessionDep, response: Response, id: int, fields: dict
+):
+    try:
+        project_material_response = await project_material_rep.update(
+            session, id, fields
+        )
+        if project_material_response:
+            return project_material_response
+        else:
+            response.status_code = HTTP_404_NOT_FOUND
+            return {"msg": "Project material is not found"}
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
+
+
 @project_router.delete("/{id}")
 async def delete_project(session: SessionDep, response: Response, id: int):
     project_response = await project_rep.delete(session, id)
@@ -69,3 +90,14 @@ async def delete_project(session: SessionDep, response: Response, id: int):
     else:
         response.status_code = HTTP_404_NOT_FOUND
         return {"msg": "Project is not found"}
+
+
+@project_router.delete("/material/{id}")
+async def delete_project_material(session: SessionDep, response: Response, id: int):
+    project_material_response = await project_material_rep.delete(session, id)
+    if project_material_response:
+        response.status_code = HTTP_204_NO_CONTENT
+        return {"msg": "Project Material is deleted"}
+    else:
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Project Material is not found"}

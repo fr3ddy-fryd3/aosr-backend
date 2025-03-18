@@ -15,3 +15,9 @@ class DBAosrSchema(BaseSchema):
     section_id: int
     name: str
     materials: list[DBAosrMaterialSchema]
+
+
+class DBAosrSchemaForUpdate(BaseSchema):
+    id: int
+    section_id: int
+    name: str

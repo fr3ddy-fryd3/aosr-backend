@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.section import Section
 from app.models.section_material import SectionMaterial
-from app.schemas.section import SectionSchema, DBSectionSchema
+from app.schemas.section import SectionSchema, DBSectionSchema, DBSectionSchemaForUpdate
 
 
 class SectionRepository:
@@ -55,7 +55,7 @@ class SectionRepository:
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
-    ) -> DBSectionSchema | None:
+    ) -> DBSectionSchemaForUpdate | None:
         stmt = select(Section).where(Section.id == id)
         result = await session.execute(stmt)
         section = result.scalars().one_or_none()
@@ -70,24 +70,18 @@ class SectionRepository:
                 if field in columns:
                     setattr(section, field, value)
                 else:
-                    print(f"Поле {field} отсутствует в таблице Material")
+                    raise ValueError(f"AosrMaterial Table hasn't field {field}")
 
             await session.commit()
-            await session.refresh(section, ["materials"])
-            for section_material in section.materials:
-                await session.refresh(section_material, ["material"])
+            await session.refresh(section)
 
-            return DBSectionSchema.model_validate(section)
+            return DBSectionSchemaForUpdate.model_validate(section)
         except Exception as e:
             await session.rollback()
             raise e
 
     async def delete(self, session: AsyncSession, id: int) -> bool:
-        stmt = (
-            select(Section)
-            .where(Section.id == id)
-            .options(selectinload(Section.materials))
-        )
+        stmt = select(Section).where(Section.id == id)
         result = await session.execute(stmt)
         section = result.scalars().one_or_none()
 

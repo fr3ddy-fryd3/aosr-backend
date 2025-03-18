@@ -11,3 +11,8 @@ class DBSectionMaterialSchema(SectionMaterialSchema):
     id: int
     section_id: int
     material: DBMaterialSchema
+
+
+class DBSectionMaterialSchemaForUpdate(SectionMaterialSchema):
+    id: int
+    section_id: int
