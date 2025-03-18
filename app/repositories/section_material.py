@@ -39,9 +39,9 @@ class SectionMaterialRepository:
         result = await session.execute(stmt)
         section_material = result.scalars().all()
 
-        if section_material:
-            await session.delete(section_material)
-            await session.commit()
-            return True
-        else:
+        if section_material is None:
             return False
+
+        await session.delete(section_material)
+        await session.commit()
+        return True

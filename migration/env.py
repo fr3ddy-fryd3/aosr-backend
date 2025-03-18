@@ -9,7 +9,7 @@ from alembic import context
 
 from database import DATABASE_URL
 from app.models.base import Base
-from app.models.passport import Passport, PassportAosrUsage
+from app.models.passport import Passport, PassportUsage
 from app.models.project import Project
 from app.models.project_material import ProjectMaterial
 from app.models.section import Section

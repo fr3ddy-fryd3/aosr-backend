@@ -14,3 +14,13 @@ class DBPassportSchema(PassportSchema):
     id: int
     available_volume: int
     material: DBMaterialSchema
+
+
+class PassportUsageSchema(BaseSchema):
+    aosr_material_id: int
+    passport_id: int
+    used_volume: int
+
+
+class DBPassportUsageSchema(PassportUsageSchema):
+    id: int

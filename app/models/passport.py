@@ -10,9 +10,7 @@ class Passport(Base):
     number: Mapped[str] = mapped_column(unique=True)
     volume: Mapped[int]
 
-    aosr_usages: Mapped[list["PassportAosrUsage"]] = relationship(
-        back_populates="passport"
-    )
+    aosr_usages: Mapped[list["PassportUsage"]] = relationship(back_populates="passport")
     material: Mapped["Material"] = relationship(back_populates="passports")
 
     @property
@@ -21,7 +19,7 @@ class Passport(Base):
         return self.volume - used_volume
 
 
-class PassportAosrUsage(Base):
+class PassportUsage(Base):
     aosr_material_id: Mapped[int] = mapped_column(ForeignKey("aosrmaterials.id"))
     passport_id: Mapped[int] = mapped_column(ForeignKey("passports.id"))
     used_volume: Mapped[int] = mapped_column(nullable=False)

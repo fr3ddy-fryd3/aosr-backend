@@ -66,9 +66,10 @@ class MaterialRepository:
         stmt = select(Material).where(Material.id == id)
         raw_result = await session.execute(stmt)
         db_material = raw_result.scalars().one_or_none()
-        if db_material:
-            await session.delete(db_material)
-            await session.commit()
-            return True
-        else:
+
+        if db_material is None:
             return False
+
+        await session.delete(db_material)
+        await session.commit()
+        return True

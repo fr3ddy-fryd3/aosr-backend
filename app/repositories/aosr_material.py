@@ -39,9 +39,9 @@ class AosrMaterialRepository:
         result = await session.execute(stmt)
         aosr_material = result.scalars().all()
 
-        if aosr_material:
-            await session.delete(aosr_material)
-            await session.commit()
-            return True
-        else:
+        if aosr_material is None:
             return False
+
+        await session.delete(aosr_material)
+        await session.commit()
+        return True

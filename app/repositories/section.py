@@ -85,9 +85,9 @@ class SectionRepository:
         result = await session.execute(stmt)
         section = result.scalars().one_or_none()
 
-        if section:
-            await session.delete(section)
-            await session.commit()
-            return True
-        else:
+        if section is None:
             return False
+
+        await session.delete(section)
+        await session.commit()
+        return True

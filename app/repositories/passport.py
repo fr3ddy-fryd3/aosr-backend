@@ -28,13 +28,17 @@ class PassportRepository:
     async def create(
         self, session: AsyncSession, passport_data: PassportSchema
     ) -> DBPassportSchema | None:
-        passport = Passport(**passport_data.model_dump())
+        try:
+            passport = Passport(**passport_data.model_dump())
 
-        session.add(passport)
-        await session.commit()
-        await session.refresh(passport)
+            session.add(passport)
+            await session.commit()
+            await session.refresh(passport)
 
-        return DBPassportSchema.model_validate(passport)
+            return DBPassportSchema.model_validate(passport)
+        except Exception as e:
+            await session.rollback()
+            raise e
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
@@ -65,9 +69,10 @@ class PassportRepository:
         stmt = select(Passport).where(Passport.id == id)
         result = await session.execute(stmt)
         passport = result.scalars().one_or_none()
-        if passport:
-            await session.delete(passport)
-            await session.commit()
-            return True
-        else:
+
+        if passport is None:
             return False
+
+        await session.delete(passport)
+        await session.commit()
+        return True

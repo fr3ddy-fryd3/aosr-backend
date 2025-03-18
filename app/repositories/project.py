@@ -85,9 +85,9 @@ class ProjectRepository:
         result = await session.execute(stmt)
         project = result.scalars().one_or_none()
 
-        if project:
-            await session.delete(project)
-            await session.commit()
-            return True
-        else:
+        if project is None:
             return False
+
+        await session.delete(project)
+        await session.commit()
+        return True

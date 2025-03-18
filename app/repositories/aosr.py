@@ -88,9 +88,9 @@ class AosrRepository:
         result = await session.execute(stmt)
         aosr = result.scalars().one_or_none()
 
-        if aosr:
-            await session.delete(aosr)
-            await session.commit()
-            return True
-        else:
+        if aosr is None:
             return False
+
+        await session.delete(aosr)
+        await session.commit()
+        return True

@@ -39,9 +39,9 @@ class ProjectMaterialRepository:
         result = await session.execute(stmt)
         project_material = result.scalars().all()
 
-        if project_material:
-            await session.delete(project_material)
-            await session.commit()
-            return True
-        else:
+        if project_material is None:
             return False
+
+        await session.delete(project_material)
+        await session.commit()
+        return True
