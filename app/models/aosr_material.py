@@ -21,5 +21,5 @@ class AosrMaterial(Base):
     )
 
     @property
-    def used_volume(self) -> int:
+    def used_volume(self) -> float:
         return sum(usage.used_volume for usage in self.passport_usages)

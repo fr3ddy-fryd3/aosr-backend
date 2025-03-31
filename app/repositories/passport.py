@@ -33,7 +33,7 @@ class PassportRepository:
 
             session.add(passport)
             await session.commit()
-            await session.refresh(passport)
+            await session.refresh(passport, ["aosr_usages", "material"])
 
             return DBPassportSchema.model_validate(passport)
         except Exception as e:
@@ -46,6 +46,9 @@ class PassportRepository:
         stmt = select(Passport).where(Passport.id == id)
         result = await session.execute(stmt)
         passport = result.scalars().one_or_none()
+
+        if "volume" in data.keys():
+            data["volume"] = float(data["volume"])
 
         if passport is None:
             return None
@@ -60,6 +63,7 @@ class PassportRepository:
                     raise ValueError(f"Passport Table hasn't field {field}")
 
             await session.commit()
+            await session.refresh(passport, ["material", "aosr_usages"])
             return DBPassportSchema.model_validate(passport)
         except Exception as e:
             await session.rollback()

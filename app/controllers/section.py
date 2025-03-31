@@ -32,6 +32,14 @@ async def get_section(session: SessionDep, response: Response, id: int = 0):
         return sections_response
 
 
+@section_router.get("/by-project/{id}")
+async def get_section_by_project(
+    session: SessionDep, response: Response, project_id: int
+):
+    sections_response = await section_rep.get_by_project(session, project_id)
+    return sections_response
+
+
 @section_router.post("/")
 async def create_section(
     session: SessionDep, response: Response, section_data: SectionSchema

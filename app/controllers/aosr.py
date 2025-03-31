@@ -32,6 +32,12 @@ async def get_aosr(session: SessionDep, response: Response, id: int = 0):
         return aosrs_response
 
 
+@aosr_router.get("/by-section/{id}")
+async def get_aosr_by_section(session: SessionDep, response: Response, section_id: int):
+    aosrs_response = await aosr_rep.get_by_section(session, section_id)
+    return aosrs_response
+
+
 @aosr_router.post("/")
 async def create_aosr(session: SessionDep, response: Response, aosr_data: AosrSchema):
     try:

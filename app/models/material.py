@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class Material(Base):
     name: Mapped[str] = mapped_column(unique=True)
     units: Mapped[str]
+    density: Mapped[float]
 
     project_materials: Mapped[list["ProjectMaterial"]] = relationship(
         back_populates="material"

@@ -44,6 +44,9 @@ class MaterialRepository:
         result = await session.execute(stmt)
         material = result.scalars().one_or_none()
 
+        if "density" in data.keys():
+            data["density"] = float(data["density"])
+
         if material is None:
             return None
 

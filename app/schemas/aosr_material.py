@@ -12,7 +12,7 @@ class DBAosrMaterialSchema(AosrMaterialSchema):
     id: int
     aosr_id: int
     material: DBMaterialSchema
-    used_volume: int
+    used_volume: float
 
 
 class DBAosrMaterialSchemaForUpdate(AosrMaterialSchema):

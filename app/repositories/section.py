@@ -20,15 +20,31 @@ class SectionRepository:
     async def get_by_id(self, session: AsyncSession, id: int) -> DBSectionSchema | None:
         stmt = (
             select(Section)
+            .where(Section.id == id)
             .options(
                 selectinload(Section.materials).selectinload(SectionMaterial.material)
             )
-            .where(Section.id == id)
         )
         result = await session.execute(stmt)
         section = result.scalars().one_or_none()
 
         return DBSectionSchema.model_validate(section) if section else None
+
+    async def get_by_project(
+        self, session: AsyncSession, project_id: int
+    ) -> list[DBSectionSchema]:
+        stmt = (
+            select(Section)
+            .where(Section.project_id == project_id)
+            .options(
+                selectinload(Section.materials).selectinload(SectionMaterial.material)
+            )
+        )
+
+        result = await session.execute(stmt)
+        sections = result.scalars().all()
+
+        return [DBSectionSchema.model_validate(section) for section in sections]
 
     async def create(
         self, session: AsyncSession, section_data: SectionSchema

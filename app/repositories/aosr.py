@@ -33,6 +33,22 @@ class AosrRepository:
         aosr = DBAosrSchema.model_validate(aosr) if aosr else None
         return aosr
 
+    async def get_by_section(
+        self, session: AsyncSession, section_id: int
+    ) -> list[DBAosrSchema]:
+        stmt = (
+            select(Aosr)
+            .where(Aosr.section_id == section_id)
+            .options(
+                selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+                selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
+            )
+        )
+        result = await session.execute(stmt)
+        aosrs = result.scalars().all()
+
+        return [DBAosrSchema.model_validate(aosr) for aosr in aosrs]
+
     async def create(
         self, session: AsyncSession, aosr_data: AosrSchema
     ) -> DBAosrSchema:
@@ -50,6 +66,7 @@ class AosrRepository:
             await session.refresh(aosr, ["materials"])
             for aosr_material in aosr.materials:
                 await session.refresh(aosr_material, ["material"])
+                await session.refresh(aosr_material, ["passport_usages"])
 
             return DBAosrSchema.model_validate(aosr)
         except Exception as e:

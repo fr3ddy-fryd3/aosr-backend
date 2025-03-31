@@ -7,12 +7,12 @@ from app.schemas.material import DBMaterialSchema
 class PassportSchema(BaseSchema):
     material_id: int
     number: str
-    volume: int
+    volume: float
 
 
 class DBPassportSchema(PassportSchema):
     id: int
-    available_volume: int
+    available_volume: float
     material: DBMaterialSchema
 
 
