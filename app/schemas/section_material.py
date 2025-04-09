@@ -3,13 +3,13 @@ from .material import DBMaterialSchema
 
 
 class SectionMaterialSchema(BaseSchema):
+    section_id: int
     material_id: int
     volume: float
 
 
 class DBSectionMaterialSchema(SectionMaterialSchema):
     id: int
-    section_id: int
     material: DBMaterialSchema
 
 

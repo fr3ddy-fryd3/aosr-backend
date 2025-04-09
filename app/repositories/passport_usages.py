@@ -63,6 +63,11 @@ class PassportAosrUsageRepository:
                 else:
                     raise ValueError(f"Passport Usage Table hasn't field {field}")
 
+            await session.commit()
+            await session.refresh(passport_usage)
+
+            return DBPassportUsageSchema.model_validate(passport_usage)
+
         except Exception as e:
             await session.rollback()
             raise e

@@ -4,13 +4,16 @@ from sqlalchemy.orm import selectinload
 
 from app.models.aosr import Aosr
 from app.models.aosr_material import AosrMaterial
-from app.schemas.aosr import AosrSchema, DBAosrSchema, DBAosrSchemaForUpdate
+from app.models.section_material import SectionMaterial
+from app.schemas.aosr import AosrSchema, DBAosrSchema, DBAosrSchemaWithoutMaterials
 
 
 class AosrRepository:
     async def get_all(self, session: AsyncSession) -> list[DBAosrSchema]:
         stmt = select(Aosr).options(
-            selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+            selectinload(Aosr.materials)
+            .selectinload(AosrMaterial.section_material)
+            .selectinload(SectionMaterial.material),
             selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
         )
         result = await session.execute(stmt)
@@ -23,7 +26,9 @@ class AosrRepository:
             select(Aosr)
             .where(Aosr.id == id)
             .options(
-                selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+                selectinload(Aosr.materials)
+                .selectinload(AosrMaterial.section_material)
+                .selectinload(SectionMaterial.material),
                 selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
             )
         )
@@ -40,7 +45,9 @@ class AosrRepository:
             select(Aosr)
             .where(Aosr.section_id == section_id)
             .options(
-                selectinload(Aosr.materials).selectinload(AosrMaterial.material),
+                selectinload(Aosr.materials)
+                .selectinload(AosrMaterial.section_material)
+                .selectinload(SectionMaterial.material),
                 selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
             )
         )
@@ -51,31 +58,23 @@ class AosrRepository:
 
     async def create(
         self, session: AsyncSession, aosr_data: AosrSchema
-    ) -> DBAosrSchema:
+    ) -> DBAosrSchemaWithoutMaterials:
         try:
             aosr_dict = aosr_data.model_dump(exclude={"materials"})
             aosr = Aosr(**aosr_dict)
 
-            aosr.materials = [
-                AosrMaterial(**material.model_dump())
-                for material in aosr_data.materials
-            ]
-
             session.add(aosr)
             await session.commit()
-            await session.refresh(aosr, ["materials"])
-            for aosr_material in aosr.materials:
-                await session.refresh(aosr_material, ["material"])
-                await session.refresh(aosr_material, ["passport_usages"])
+            await session.refresh(aosr)
 
-            return DBAosrSchema.model_validate(aosr)
+            return DBAosrSchemaWithoutMaterials.model_validate(aosr)
         except Exception as e:
             await session.rollback()
             raise e
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
-    ) -> DBAosrSchemaForUpdate | None:
+    ) -> DBAosrSchemaWithoutMaterials | None:
         stmt = select(Aosr).where(Aosr.id == id)
         result = await session.execute(stmt)
         aosr = result.scalars().one_or_none()
@@ -95,7 +94,7 @@ class AosrRepository:
             await session.commit()
             await session.refresh(aosr)
 
-            return DBAosrSchemaForUpdate.model_validate(aosr)
+            return DBAosrSchemaWithoutMaterials.model_validate(aosr)
         except Exception as e:
             await session.rollback()
             raise e

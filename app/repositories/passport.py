@@ -19,7 +19,13 @@ class PassportRepository:
     async def get_by_id(
         self, session: AsyncSession, id: int
     ) -> DBPassportSchema | None:
-        stmt = select(Passport).where(Passport.id == id)
+        stmt = (
+            select(Passport)
+            .options(
+                selectinload(Passport.material), selectinload(Passport.aosr_usages)
+            )
+            .where(Passport.id == id)
+        )
         result = await session.execute(stmt)
         passport = result.scalars().one_or_none()
 

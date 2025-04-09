@@ -10,7 +10,9 @@ class Passport(Base):
     number: Mapped[str] = mapped_column(unique=True)
     volume: Mapped[float]
 
-    aosr_usages: Mapped[list["PassportUsage"]] = relationship(back_populates="passport")
+    aosr_usages: Mapped[list["PassportUsage"]] = relationship(
+        back_populates="passport", cascade="all, delete-orphan"
+    )
     material: Mapped["Material"] = relationship(back_populates="passports")
 
     @property

@@ -18,13 +18,15 @@ class ProjectRepository:
         return [DBProjectSchema.model_validate(project) for project in projects]
 
     async def get_by_id(self, session: AsyncSession, id: int) -> DBProjectSchema | None:
-        stmt = (
-            select(Project)
-            .where(Project.id == id)
-            .options(
-                selectinload(Project.materials).selectinload(ProjectMaterial.material)
-            )
-        )
+        # stmt = (
+        #     select(Project)
+        #     .where(Project.id == id)
+        #     .options(
+        #         selectinload(Project.materials).selectinload(ProjectMaterial.material)
+        #     )
+        # )
+
+        stmt = select(Project).where(Project.id == id)
         result = await session.execute(stmt)
         project = result.scalars().one_or_none()
 
@@ -37,16 +39,17 @@ class ProjectRepository:
             project_dict = project_data.model_dump(exclude={"materials"})
             project = Project(**project_dict)
 
-            project.materials = [
-                ProjectMaterial(**material.model_dump())
-                for material in project_data.materials
-            ]
+            # project.materials = [
+            #     ProjectMaterial(**material.model_dump())
+            #     for material in project_data.materials
+            # ]
 
             session.add(project)
             await session.commit()
-            await session.refresh(project, ["materials"])
-            for project_material in project.materials:
-                await session.refresh(project_material, ["material"])
+            # await session.refresh(project, ["materials"])
+            await session.refresh(project)
+            # for project_material in project.materials:
+            #     await session.refresh(project_material, ["material"])
 
             return DBProjectSchema.model_validate(project)
         except Exception as e:

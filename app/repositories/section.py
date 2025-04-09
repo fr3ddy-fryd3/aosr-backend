@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.section import Section
 from app.models.section_material import SectionMaterial
-from app.schemas.section import SectionSchema, DBSectionSchema, DBSectionSchemaForUpdate
+from app.schemas.section import SectionSchema, DBSectionSchema, DBSectionSchemaForCreate
 
 
 class SectionRepository:
@@ -53,16 +53,17 @@ class SectionRepository:
             section_dict = section_data.model_dump(exclude={"materials"})
             section = Section(**section_dict)
 
-            section.materials = [
-                SectionMaterial(**material.model_dump())
-                for material in section_data.materials
-            ]
+            # section.materials = [
+            #     SectionMaterial(**material.model_dump())
+            #     for material in section_data.materials
+            # ]
 
             session.add(section)
             await session.commit()
-            await session.refresh(section, ["materials"])
-            for section_material in section.materials:
-                await session.refresh(section_material, ["material"])
+            await session.refresh(section)
+            # await session.refresh(section, ["materials"])
+            # for section_material in section.materials:
+            #     await session.refresh(section_material, ["material"])
 
             return DBSectionSchema.model_validate(section)
         except Exception as e:
@@ -71,7 +72,7 @@ class SectionRepository:
 
     async def update(
         self, session: AsyncSession, id: int, data: dict
-    ) -> DBSectionSchemaForUpdate | None:
+    ) -> DBSectionSchemaForCreate | None:
         stmt = select(Section).where(Section.id == id)
         result = await session.execute(stmt)
         section = result.scalars().one_or_none()
@@ -91,7 +92,7 @@ class SectionRepository:
             await session.commit()
             await session.refresh(section)
 
-            return DBSectionSchemaForUpdate.model_validate(section)
+            return DBSectionSchemaForCreate.model_validate(section)
         except Exception as e:
             await session.rollback()
             raise e

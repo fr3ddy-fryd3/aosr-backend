@@ -21,9 +21,6 @@ class Material(Base):
     section_materials: Mapped[list["SectionMaterial"]] = relationship(
         back_populates="material"
     )
-    aosr_materials: Mapped[list["AosrMaterial"]] = relationship(
-        back_populates="material"
-    )
     passports: Mapped[list["Passport"]] = relationship(
         back_populates="material", cascade="all, delete-orphan"
     )

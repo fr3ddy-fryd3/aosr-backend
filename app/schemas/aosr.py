@@ -7,7 +7,7 @@ from .aosr_material import AosrMaterialSchema, DBAosrMaterialSchema
 class AosrSchema(BaseSchema):
     section_id: int
     name: str
-    materials: list[AosrMaterialSchema]
+    # materials: list[AosrMaterialSchema]
 
 
 class DBAosrSchema(BaseSchema):
@@ -17,7 +17,7 @@ class DBAosrSchema(BaseSchema):
     materials: list[DBAosrMaterialSchema]
 
 
-class DBAosrSchemaForUpdate(BaseSchema):
+class DBAosrSchemaWithoutMaterials(BaseSchema):
     id: int
     section_id: int
     name: str

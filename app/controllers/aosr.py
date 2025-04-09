@@ -7,6 +7,8 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from app.schemas.aosr_material import AosrMaterialSchema
+
 from .base import SessionDep
 from app.repositories.aosr import AosrRepository
 from app.repositories.aosr_material import AosrMaterialRepository
@@ -32,7 +34,7 @@ async def get_aosr(session: SessionDep, response: Response, id: int = 0):
         return aosrs_response
 
 
-@aosr_router.get("/by-section/{id}")
+@aosr_router.get("/by-section/{section_id}")
 async def get_aosr_by_section(session: SessionDep, response: Response, section_id: int):
     aosrs_response = await aosr_rep.get_by_section(session, section_id)
     return aosrs_response
@@ -44,6 +46,22 @@ async def create_aosr(session: SessionDep, response: Response, aosr_data: AosrSc
         aosr_response = await aosr_rep.create(session, aosr_data)
         response.status_code = HTTP_201_CREATED
         return aosr_response
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
+
+
+@aosr_router.post("/material")
+async def create_aosr_material(
+    session: SessionDep, response: Response, aosr_material_data: AosrMaterialSchema
+):
+    try:
+        aosr_material_response = await aosr_material_rep.create(
+            session, aosr_material_data
+        )
+        response.status_code = HTTP_201_CREATED
+        return aosr_material_response
     except Exception as e:
         response.status_code = HTTP_400_BAD_REQUEST
         logging.error(e)

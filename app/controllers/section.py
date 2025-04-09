@@ -7,6 +7,8 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from app.schemas.section_material import SectionMaterialSchema
+
 from .base import SessionDep
 from app.repositories.section import SectionRepository
 from app.repositories.section_material import SectionMaterialRepository
@@ -32,7 +34,17 @@ async def get_section(session: SessionDep, response: Response, id: int = 0):
         return sections_response
 
 
-@section_router.get("/by-project/{id}")
+@section_router.get("/material/{id}")
+async def get_section_material_by_id(session: SessionDep, response: Response, id: int):
+    section_material_response = await section_material_rep.get_by_id(session, id)
+    if section_material_response:
+        return section_material_response
+    else:
+        response.status_code = HTTP_404_NOT_FOUND
+        return {"msg": "Section Material is not found"}
+
+
+@section_router.get("/by-project/{project_id}")
 async def get_section_by_project(
     session: SessionDep, response: Response, project_id: int
 ):
@@ -48,6 +60,24 @@ async def create_section(
         section_response = await section_rep.create(session, section_data)
         response.status_code = HTTP_201_CREATED
         return section_response
+    except Exception as e:
+        response.status_code = HTTP_400_BAD_REQUEST
+        logging.error(e)
+        return {"msg": "Bad request"}
+
+
+@section_router.post("/material")
+async def create_section_material(
+    session: SessionDep,
+    response: Response,
+    section_material_data: SectionMaterialSchema,
+):
+    try:
+        section_material_response = await section_material_rep.create(
+            session, section_material_data
+        )
+        response.status_code = HTTP_201_CREATED
+        return section_material_response
     except Exception as e:
         response.status_code = HTTP_400_BAD_REQUEST
         logging.error(e)
