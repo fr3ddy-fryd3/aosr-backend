@@ -1,9 +1,11 @@
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import func
 
 from app.models.aosr import Aosr
 from app.models.aosr_material import AosrMaterial
+from app.models.passport import PassportUsage
 from app.models.section_material import SectionMaterial
 from app.schemas.aosr import AosrSchema, DBAosrSchema, DBAosrSchemaWithoutMaterials
 
@@ -50,11 +52,37 @@ class AosrRepository:
                 .selectinload(SectionMaterial.material),
                 selectinload(Aosr.materials).selectinload(AosrMaterial.passport_usages),
             )
+            .order_by(Aosr.name.asc())
         )
         result = await session.execute(stmt)
         aosrs = result.scalars().all()
 
         return [DBAosrSchema.model_validate(aosr) for aosr in aosrs]
+
+    async def get_by_passport(
+        self, session: AsyncSession, passport_id: int
+    ) -> list[dict]:
+        stmt = (
+            select(
+                Aosr.id,
+                Aosr.name,
+                func.sum(PassportUsage.used_volume).label("total_used_volume"),
+            )
+            .join(AosrMaterial, Aosr.id == AosrMaterial.aosr_id)
+            .join(PassportUsage, AosrMaterial.id == PassportUsage.aosr_material_id)
+            .where(PassportUsage.passport_id == passport_id)
+            .group_by(Aosr.id, Aosr.name)
+        )
+
+        result = await session.execute(stmt)
+        return [
+            {
+                "id": row.id,
+                "name": row.name,
+                "total_used_volume": row.total_used_volume or 0.0,
+            }
+            for row in result.all()
+        ]
 
     async def create(
         self, session: AsyncSession, aosr_data: AosrSchema

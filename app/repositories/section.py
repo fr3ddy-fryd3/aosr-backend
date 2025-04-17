@@ -48,7 +48,7 @@ class SectionRepository:
 
     async def create(
         self, session: AsyncSession, section_data: SectionSchema
-    ) -> DBSectionSchema:
+    ) -> DBSectionSchemaForCreate:
         try:
             section_dict = section_data.model_dump(exclude={"materials"})
             section = Section(**section_dict)
@@ -65,7 +65,7 @@ class SectionRepository:
             # for section_material in section.materials:
             #     await session.refresh(section_material, ["material"])
 
-            return DBSectionSchema.model_validate(section)
+            return DBSectionSchemaForCreate.model_validate(section)
         except Exception as e:
             await session.rollback()
             raise e

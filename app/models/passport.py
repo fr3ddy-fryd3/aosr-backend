@@ -9,6 +9,7 @@ class Passport(Base):
     material_id: Mapped[int] = mapped_column(ForeignKey("materials.id"))
     number: Mapped[str] = mapped_column(unique=True)
     volume: Mapped[float]
+    density: Mapped[float]
 
     aosr_usages: Mapped[list["PassportUsage"]] = relationship(
         back_populates="passport", cascade="all, delete-orphan"
@@ -24,7 +25,7 @@ class Passport(Base):
 class PassportUsage(Base):
     aosr_material_id: Mapped[int] = mapped_column(ForeignKey("aosrmaterials.id"))
     passport_id: Mapped[int] = mapped_column(ForeignKey("passports.id"))
-    used_volume: Mapped[int] = mapped_column(nullable=False)
+    used_volume: Mapped[float] = mapped_column(nullable=False)
 
     aosr_material: Mapped["AosrMaterial"] = relationship(
         back_populates="passport_usages"

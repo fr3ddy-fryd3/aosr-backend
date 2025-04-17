@@ -8,8 +8,12 @@ from app.schemas.passport import PassportSchema, DBPassportSchema
 
 class PassportRepository:
     async def get_all(self, session: AsyncSession) -> list[DBPassportSchema]:
-        stmt = select(Passport).options(
-            selectinload(Passport.material), selectinload(Passport.aosr_usages)
+        stmt = (
+            select(Passport)
+            .options(
+                selectinload(Passport.material), selectinload(Passport.aosr_usages)
+            )
+            .order_by(Passport.number.asc())
         )
         result = await session.execute(stmt)
         passports = result.scalars().all()

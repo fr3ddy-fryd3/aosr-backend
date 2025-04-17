@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from .base import BaseSchema
 from .aosr_material import AosrMaterialSchema, DBAosrMaterialSchema
 
@@ -7,7 +5,6 @@ from .aosr_material import AosrMaterialSchema, DBAosrMaterialSchema
 class AosrSchema(BaseSchema):
     section_id: int
     name: str
-    # materials: list[AosrMaterialSchema]
 
 
 class DBAosrSchema(BaseSchema):
