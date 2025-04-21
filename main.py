@@ -25,6 +25,11 @@ app.include_router(passport_router)
 app.include_router(passport_usage_router)
 app.include_router(aosr_router)
 
+origins = [
+    "http://frontend",
+    "http://frontend:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # type: ignore

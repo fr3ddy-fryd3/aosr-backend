@@ -144,16 +144,16 @@ def upgrade() -> None:
         ["material_id"],
         unique=False,
     )
-    op.drop_table("material")
-    op.drop_index("ix_aosr_section_id", table_name="aosr")
-    op.drop_table("aosr")
-    op.drop_table("section")
-    op.drop_index("ix_aosrmaterial_aosr_id", table_name="aosrmaterial")
-    op.drop_index("ix_aosrmaterial_material_id", table_name="aosrmaterial")
-    op.drop_table("aosrmaterial")
-    op.drop_index("ix_sectionmaterial_material_id", table_name="sectionmaterial")
-    op.drop_index("ix_sectionmaterial_section_id", table_name="sectionmaterial")
-    op.drop_table("sectionmaterial")
+    # op.drop_index("ix_aosr_section_id", table_name="aosr")
+    # op.drop_index("ix_aosrmaterial_aosr_id", table_name="aosrmaterial")
+    # op.drop_index("ix_aosrmaterial_material_id", table_name="aosrmaterial")
+    # op.drop_index("ix_sectionmaterial_material_id", table_name="sectionmaterial")
+    # op.drop_index("ix_sectionmaterial_section_id", table_name="sectionmaterial")
+    # op.drop_table("aosrmaterial")
+    # op.drop_table("sectionmaterial")
+    # op.drop_table("aosr")
+    # op.drop_table("section")
+    # op.drop_table("material")
     # ### end Alembic commands ###
 
 
